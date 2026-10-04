@@ -1272,9 +1272,25 @@ function InfoPage({ path }: { path: string }) {
         <Label>Last updated October 4, 2026</Label>
         <h1>Your story stays with you.</h1>
         <p className="article-intro">
-          This first version has no account system, advertising tracker or
-          analytics integration. Your progress, saved companions and reminder
-          are stored in your browser.
+          Your progress, saved companions and reminder are stored in your
+          browser. We use Google Analytics and Microsoft Clarity to understand
+          how visitors use this website and improve the experience.
+        </p>
+        <h2>Analytics and session recordings</h2>
+        <p>
+          Google Analytics measures website visits and usage. Microsoft Clarity
+          provides heatmaps and session recordings of website interactions. These
+          services may use cookies and collect usage, browser and device data,
+          which is processed by Google and Microsoft. Read
+          {" "}
+          <External href="https://policies.google.com/technologies/partner-sites">
+            how Google uses information from partner sites
+          </External>
+          {" "}and the{" "}
+          <External href="https://privacy.microsoft.com/privacystatement">
+            Microsoft Privacy Statement
+          </External>
+          {" "}for more information.
         </p>
         <h2>What is stored on this device</h2>
         <p>
