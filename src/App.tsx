@@ -6,6 +6,7 @@ import {
   RemovePublicBonds,
 } from "./CommunityUI";
 import React, { useEffect, useRef, useState } from "react";
+import { HomeFAQ } from "./HomeFAQ";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -47,6 +48,8 @@ import {
 const RUN_KEY = "threshingday:run:v1",
   COLLECTION_KEY = "threshingday:collection:v1",
   TIMER_KEY = "threshingday:reminder:v1";
+// Enable manually when the community is established; never seed placeholder riders.
+const SHOW_HOME_PODIUM = false;
 function navigate(to: string) {
   window.history.pushState({}, "", to);
   window.dispatchEvent(new Event("site:navigate"));
@@ -451,7 +454,7 @@ function Homepage() {
   return (
     <>
       <Trial />
-      <HomePodium />
+      {SHOW_HOME_PODIUM && <HomePodium />}
       <section
         className="home-explainer content-width"
         aria-labelledby="what-title"
@@ -564,40 +567,7 @@ function Homepage() {
           ))}
         </div>
       </section>
-      <section className="home-faq content-width">
-        <h2>Before you enter the valley.</h2>
-        {[
-          [
-            "Is this the official Threshing Day game?",
-            "This is an independent fan adventure with original dragons, artwork and matching rules. Dragonkind at dragonkind.com is the official experience. Our trial does not connect to your official account.",
-          ],
-          [
-            "Is Threshing Day Game free?",
-            "Yes. Play all eight choices, replay and download your dragon card for free. No email or account is needed.",
-          ],
-          [
-            "Can I get a black or blue dragon?",
-            "Yes. All six original companions are reachable. Vesper is our black dragon and Aureth is our blue dragon. No color is designated rare in our trial; your strongest trait determines your companion.",
-          ],
-          [
-            "How do I join the leaderboard?",
-            "Finish the trial and choose Publish my bond on your result page. Your rider name and dragon become public. Each dragon contributes only your highest bond-strength score, up to 600 points across all six.",
-          ],
-          [
-            "Can I play again right away?",
-            "Yes. Choose Explore another path on your result page, or Begin a new story in the game card. There is no cooldown for this fan trial. The retry reminder is for your separate official Dragonkind attempt.",
-          ],
-          [
-            "Where is my progress saved?",
-            "Your trial progress, saved companions and reminders stay in this browser. Publishing is optional: we store your chosen public name, dragon and score only when you publish a bond. You can remove your public bonds from the Privacy page.",
-          ],
-        ].map(([q, a]) => (
-          <details key={q}>
-            <summary>{q}</summary>
-            <p>{a}</p>
-          </details>
-        ))}
-      </section>
+      <HomeFAQ />
     </>
   );
 }

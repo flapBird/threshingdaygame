@@ -271,6 +271,10 @@ export function DragonWallPage() {
       </div>
       <div className="wall-stats">
         <div>
+          <strong>{dragons.length}</strong>
+          <span>Original companions</span>
+        </div>
+        <div>
           <strong>{data?.bonds.toLocaleString() ?? "—"}</strong>
           <span>Published bonds</span>
         </div>
@@ -282,30 +286,65 @@ export function DragonWallPage() {
           Add your story <ArrowRight size={18} />
         </a>
       </div>
-      <div
-        className="wall-filters"
-        role="group"
-        aria-label="Filter newest bonds by dragon color"
-      >
+      <div className="wall-heading">
+        <div>
+          <h2>Six dragons. Your story.</h2>
+          <p>
+            Choose a companion to filter the newest bonds. Counts include all
+            published bonds of that color.
+          </p>
+        </div>
         <button
+          className="wall-all-filter"
           aria-pressed={filter === "all"}
           onClick={() => setFilter("all")}
         >
           All dragons
         </button>
-        {dragons.map((d) => (
-          <button
-            key={d.id}
-            aria-pressed={filter === d.id}
-            onClick={() => setFilter(d.id)}
-          >
-            {d.color}
-            <span>
-              {data?.colors.find((c) => c.dragonId === d.id)?.count || 0}
-            </span>
-          </button>
-        ))}
       </div>
+      <div
+        className="wall-companions"
+        role="group"
+        aria-label="Filter newest bonds by dragon color"
+      >
+        {dragons.map((d) => {
+          const count = data
+            ? (data.colors.find((c) => c.dragonId === d.id)?.count ?? 0)
+            : null;
+          return (
+            <button
+              key={d.id}
+              aria-pressed={filter === d.id}
+              onClick={() => setFilter(d.id)}
+            >
+              <img
+                src={`/images/${d.id}.webp`}
+                alt=""
+                width="800"
+                height="1000"
+              />
+              <span className="wall-companion-copy">
+                <span className="wall-companion-color">
+                  {d.color} · {d.trait}
+                </span>
+                <strong>{d.name}</strong>
+                <span className="wall-companion-count">
+                  {count === null
+                    ? loading
+                      ? "Loading count…"
+                      : "Count unavailable"
+                    : `${count.toLocaleString()} published ${count === 1 ? "bond" : "bonds"}`}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <h2 className="wall-feed-title">
+        {filter === "all"
+          ? "Latest shared bonds"
+          : `Latest ${dragons.find((d) => d.id === filter)?.color.toLowerCase()} dragon bonds`}
+      </h2>
       <CommunityStatus error={error} loading={loading} retry={refresh} />
       {data &&
         (bonds.length ? (
@@ -349,8 +388,9 @@ export function DragonWallPage() {
                 : "No recent bonds of this color yet."}
             </h2>
             <p>
-              The wall shows the latest 24 published bonds. Your story can be
-              the next.
+              {data.bonds === 0
+                ? "All six companions are ready to discover. Complete a trial and choose Publish my bond to add your story here."
+                : "The wall shows the latest 24 published bonds across all colors. Try All dragons to see the newest stories, or publish your own."}
             </p>
             <a href="/play/" className="text-link">
               Enter the valley <ArrowRight size={18} />

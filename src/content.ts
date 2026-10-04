@@ -2,6 +2,8 @@ export const SOURCE_FAQ = "https://rebecca-yarros.squarespace.com/faqs";
 export const SOURCE_SHOP = "https://rebeccayarrosshop.com/pages/dragonkind";
 export const SOURCE_REDDIT =
   "https://www.reddit.com/r/fourthwing/comments/1wvwfp9/dragonkind_dragon_bonding_megathread_part_3/";
+export const SOURCE_SCENES =
+  "https://www.reddit.com/r/fourthwing/comments/1wuyvem/dragonkind_masterpost_pt_2_will_contain_spoilers/";
 export type Guide = {
   slug: string;
   number: string;

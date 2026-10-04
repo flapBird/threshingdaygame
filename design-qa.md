@@ -1,8 +1,45 @@
-# Design QA · 2026-10-05
+# Design QA · FAQ and launch refinements · 2026-10-05
 
 **final result: passed**
 
-## Source and implementation
+## Current refinement: source and implementation
+
+- Visual source: user-supplied How to play screenshot, saved as `qa/refinements/reference-how.png` (2876 × 934 pixels). The requested change intentionally replaces its ivory background with the established petrol/gold theme; this screenshot is a structure/reference baseline, not a request to reproduce its colors.
+- Additional source: the screenshots supplied by the user list the FAQ topics. Their accompanying analysis is treated as research leads, not verified official rules. Official author FAQ and two Reddit megathreads were checked on October 5.
+- Implementation: [Cloudflare local preview](http://127.0.0.1:4175/), with real local D1 counts of 0 public bonds / 0 riders. No test rows were added to the preview database in this refinement.
+- Desktop: 1280 × 800 CSS viewport; `home-after-desktop.png` is 1280 × 3610, `faq-desktop.png` is 1280 × 800, `wall-desktop.png` is 1280 × 1536, all in `qa/refinements/`.
+- Responsive: 390 × 844 (`faq-mobile.png`, `wall-mobile.png`, `timer-mobile.png`), 320 × 740 (`home-320.png`, `faq-320.png`, `wall-320.png`), 768 × 1024 (`wall-tablet.png`). Measured document width equals actual viewport width at every checked breakpoint.
+- Normalization: source CSS size/DPR are unknown (144 DPI metadata is not a verified CSS viewport). The source is resized proportionally to 1280px for comparison. Browser captures use one image pixel per CSS pixel. Full-page heights differ because the podium is hidden and FAQ content is expanded; this is an intentional content change.
+- State: homepage introduction, FAQ closed or one question expanded, genuine empty wall, blue filter selected during interaction checks. Mobile keyboard screenshot includes the real focus outline.
+
+## Current comparison evidence and iteration history
+
+1. **Baseline — P1 theme discontinuity / FAQ gaps / empty wall presentation.** Current-run `home-before-desktop.png` and `wall-before-desktop.png` captured the ivory How section, generic six-question FAQ, homepage podium and text-only empty wall. The user asked to change these.
+2. **First revision — P1 image sizing.** The new six dragon cards initially retained the HTML image height of 1000px; `wall-initial-sizing.png` records the problem. Adding explicit automatic CSS heights and a preferred aspect ratio restored compact cards. Final desktop images measure 183 × 173.84 CSS px rather than 183 × 1000. The same fix covers published wall images.
+3. **Post-fix comparison — passed.** Opened and inspected both source and rendered artifacts in the same comparison inputs: `comparison-home.png` (baseline left / revised right, 1280 × 1805), `comparison-how.png` (user reference above / dark revision below, 1280 × 785), `comparison-wall.png` (empty baseline left / six-companion revision right, 1280 × 768), and `comparison-wall-sizing.png` (initial sizing issue left / corrected right, 1280 × 1181). `how-desktop.png` and `how-320.png` are unaltered content crops from their full-page captures.
+- Rejected captures: offscreen keyboard activation initially left the screenshot at the hero, and full-page capture from a scrolled viewport included an offscreen fixed skip-link artifact. These were replaced by the accepted FAQ screenshot and fresh wall captures from scrollY = 0. They are not used as final evidence.
+
+## Current five-surface assessment
+
+- **Typography:** existing self-hosted Cormorant Garamond / Inter preserved. Display headings, 14px FAQ/body copy, gold step numbers and readable expanded answers remain consistent. At 320px, How is one column and FAQ questions wrap without covering their icons.
+- **Spacing/layout:** desktop How retains four steps; mobile behavior follows existing breakpoints. FAQ has three topic groups and aligned plus/minus controls. Dragon filters use six columns on desktop, three at 768px and two on phones. No horizontal overflow was measured.
+- **Colors/tokens:** How uses `--surface` #11282b, `--ivory`, `--muted` and antique gold. No isolated light section remains on the homepage. Hover, expanded, pressed and keyboard focus states are visible.
+- **Image quality:** six original WebP portraits reused without placeholder or code-drawn replacements. All six loaded successfully; the compact crop preserves each dragon’s face and silhouette. No new generated artwork was needed.
+- **Copy/content:** exact title “Threshing Day game FAQ”, 16 focused questions, contextual guide/timer/atlas/privacy links, and clearly attributed player reports. No guaranteed official black/blue route or fabricated public counts. Six available original companions are distinguished from published bonds. Homepage podium is manually disabled; the leaderboard route remains available.
+
+## Current verification and limits
+
+- Build / TypeScript / 16-route prerender passed, including a repeat build after the image sizing fix.
+- 10 unit checks and 4 Sites compatibility checks passed. Separate temporary workerd/D1 integration and Cloudflare dry-run passed: publication, idempotency, scores, counts, rankings, privacy removal and input limits. No backend/schema change in this refinement.
+- Browser checks: exact FAQ heading and 16 questions; homepage podium absent; mouse and keyboard FAQ open/close; blue wall filter; six real zero counts; loading states observed; FAQ links reach the black/blue guide, its `#routes` section, and retry `#timer` (settled anchor positions about 120px below the top). App console check returned no errors or warnings in the inspected tabs.
+- Production D1/domain behavior and OS-level PNG download remain outside this local refinement. No deployment, DNS or remote migration was performed. Missing API/error presentation is implemented distinctly from a confirmed zero count, but no forced-offline UI capture was taken in this run.
+- No actionable P0/P1/P2 findings remain. Current report and screenshot index: `qa/refinements/audit.md`.
+
+## Archived baseline: previous hero and community build
+
+The following records the previous implementation and its checks; the current user decision overrides its visible homepage podium and ivory How section.
+
+### Previous source and implementation
 
 - Source visual truth: `qa/community/reference-hero.png` (user screenshot, 2690 × 1254) and `qa/community/reference-podium.png` (2712 × 642).
 - Reference: [threshingdaygame.com](https://threshingdaygame.com/). Homepage HTML was reviewed; competitor playthrough, traffic and ranking integrity were not verified.

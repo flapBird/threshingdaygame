@@ -2172,8 +2172,9 @@ details p {
   color: var(--gold);
 }
 .how-section {
-  background: var(--ivory);
-  color: var(--ink);
+  background: var(--surface);
+  color: var(--ivory);
+  border-block: 1px solid var(--line);
   padding: 53px 0;
 }
 .how-section h2 {
@@ -2182,7 +2183,7 @@ details p {
 }
 .how-section .section-heading > p {
   font-size: 12px;
-  color: #50615e;
+  color: var(--muted);
 }
 .how-steps {
   padding: 0;
@@ -2193,13 +2194,13 @@ details p {
   gap: 30px;
 }
 .how-steps li {
-  border-top: 1px solid #c4cabc;
+  border-top: 1px solid #d4b78045;
   padding-top: 22px;
 }
 .how-steps li > span {
   font-size: 11px;
   letter-spacing: 2px;
-  color: #677c72;
+  color: var(--gold);
 }
 .how-steps h3 {
   font-size: 25px;
@@ -2209,7 +2210,7 @@ details p {
 .how-steps p {
   font-size: 12px;
   line-height: 1.8;
-  color: #50615e;
+  color: var(--muted);
 }
 .home-guides {
   padding: 67px 0 58px;
@@ -2254,7 +2255,24 @@ details p {
 .home-faq h2 {
   font-size: 36px;
   font-weight: 500;
-  margin-bottom: 26px;
+  margin-bottom: 10px;
+}
+.faq-intro {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+.faq-group {
+  margin-top: 30px;
+}
+.faq-group > h3 {
+  font-family: "Inter", sans-serif;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 7px;
 }
 .home-faq details {
   border-bottom: 1px solid var(--line);
@@ -2264,12 +2282,55 @@ details p {
   padding: 20px 0;
   font-size: 13px;
   line-height: 1.6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  list-style: none;
+}
+.home-faq summary::-webkit-details-marker {
+  display: none;
+}
+.home-faq summary svg {
+  flex-shrink: 0;
+  color: var(--gold);
+}
+.home-faq summary:hover,
+.home-faq details[open] summary {
+  color: var(--gold);
+}
+.home-faq summary .faq-minus,
+.home-faq details[open] .faq-plus {
+  display: none;
+}
+.home-faq details[open] .faq-minus {
+  display: block;
 }
 .home-faq details p {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.85;
-  padding: 0 20px 20px 0;
+  padding: 0 24px 0 0;
+}
+.faq-answer {
+  padding-bottom: 20px;
+}
+.faq-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  margin-top: 10px;
+}
+.faq-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--gold);
+  font-size: 12px;
+  line-height: 1.8;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .site-footer {
   border-color: #d4b78024;
@@ -2459,30 +2520,91 @@ details p {
   font-size: 12px;
   padding: 14px 19px;
 }
-.wall-filters {
+.wall-heading {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 25px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 40px 0 22px;
 }
-.wall-filters button {
+.wall-heading h2,
+.wall-feed-title {
+  font-size: 30px;
+  font-weight: 500;
+}
+.wall-heading p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  margin-top: 8px;
+  max-width: 650px;
+}
+.wall-all-filter {
   border: 1px solid var(--line);
   background: none;
   border-radius: 30px;
   padding: 10px 14px;
   min-height: 44px;
   font-size: 11px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
+  flex-shrink: 0;
 }
-.wall-filters button[aria-pressed="true"] {
+.wall-all-filter[aria-pressed="true"],
+.wall-companions button[aria-pressed="true"] {
   border-color: var(--gold);
   color: var(--gold);
   background: var(--surface-2);
 }
-.wall-filters button > span {
-  opacity: 0.65;
+.wall-companions {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+.wall-companions button {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+  padding: 0;
+  text-align: left;
+  transition: border-color 150ms;
+}
+.wall-companions button:hover {
+  border-color: var(--gold);
+}
+.wall-companions img {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 4 / 3.8;
+  object-fit: cover;
+  object-position: 50% 25%;
+}
+.wall-companion-copy {
+  display: block;
+  padding: 14px;
+}
+.wall-companion-color {
+  display: block;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--gold);
+  text-transform: capitalize;
+}
+.wall-companion-copy strong {
+  display: block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--ivory);
+  margin: 3px 0 7px;
+}
+.wall-companion-count {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.wall-feed-title {
+  margin: 42px 0 22px;
 }
 .bond-wall {
   display: grid;
@@ -2497,6 +2619,7 @@ details p {
 }
 .bond-wall article > img {
   width: 100%;
+  height: auto;
   aspect-ratio: 4/4.3;
   object-fit: cover;
   object-position: 50% 25%;
@@ -2792,6 +2915,9 @@ details p {
   .bond-wall {
     grid-template-columns: repeat(2, 1fr);
   }
+  .wall-companions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
   .publish-fields {
     flex-wrap: wrap;
   }
@@ -3060,21 +3186,34 @@ details p {
     font-size: 32px;
   }
   .wall-stats {
-    gap: 22px;
-    flex-wrap: wrap;
-    padding: 22px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px 14px;
+    padding: 20px;
   }
   .wall-stats .button {
+    grid-column: 1 / -1;
     width: 100%;
     margin-left: 0;
     justify-content: center;
   }
-  .wall-filters {
-    gap: 7px;
+  .wall-stats > div > span {
+    display: block;
+    line-height: 1.6;
   }
-  .wall-filters button {
-    font-size: 11px;
-    padding: 9px 12px;
+  .wall-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .wall-companions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .faq-links a {
+    min-height: 44px;
+    font-size: 13px;
+    padding: 10px 0;
   }
   .bond-wall {
     gap: 15px;
