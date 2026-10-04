@@ -1,8 +1,19 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "threshingdaygame",
+  "main": "cloudflare/worker.ts",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "threshingday-community",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "cloudflare/migrations",
+    },
+  ],
   "compatibility_date": "2026-10-04",
   "assets": {
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
     "directory": "./dist/client",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",

@@ -1,78 +1,70 @@
-# Threshing Day Game · 首版
+# Threshing Day Game
 
-按用户选定的第 3 张设计实现：深青黑与哑金、月夜石桥插画、桌面双栏、右侧直接答题。站点正文为英文，目标域名为 `threshingdaygame.xyz`。
+英文原创粉丝游戏，目标域名 `threshingdaygame.xyz`。页面使用完整品牌 **Threshing Day Game**，不显示域名后缀。
+
+2026-10-05 按用户提供的对手首页与排名截图重组：居中双栏，左侧完整介绍和工具入口，右侧插画游戏卡片，下接前三名、What / How、攻略和 FAQ。保留本站深绿金色、原创石桥插画与六张龙图。
 
 ## 已实现
 
-- 八个原创剧情场景、六种原创龙伙伴；点击选项直接进入下一题，无二次确认；每题无默认选择，支持返回改选、重新开始和本机续存。
-- 确定性的六倾向计分。相同回答在同一规则版本下得到相同结果；六种结果均可达到。
+- 八个原创剧情场景、六个原创伙伴；开始后点击选项直接前进，支持键盘、双击保护、返回改选、重新开始和本机续存。
+- 确定性的六倾向匹配。所有 6561 条路径均可完成，六个结果都可达到；相同回答得到相同伙伴。
 - 原创龙卡、1080×1350 PNG 导出与预览、结果链接复制、本机收藏。
-- 六色龙图鉴，颜色与收藏筛选。
-- 四篇攻略：官方入口、验证码、重试间隔、黑/蓝龙与答案路线。官方来源、社区观察和本站建议分开标识；游戏剧透默认折叠。
-- 小时/分钟重试提醒，存储绝对结束时刻，刷新后继续计时；不连接官方账号。
-- 关于、来源、隐私、反馈说明和 404 页面；反馈入口目前帮助用户复制纠错文字，不提交到后台。
-- 手机菜单、键盘按钮答题、焦点提示、跳过导航、减少动态效果支持。
-- 14 条路由预渲染为完整 HTML；独立 title/description/canonical/OG、sitemap、robots 和 favicon。结果页不索引。
+- 真实社区数据：结果页自愿发布昵称与龙契，龙墙显示最新 24 条并支持六色筛选；排行榜显示每日／总榜和前三名。
+- 服务端根据完整八个回答重算伙伴与强度。每种龙只计最高强度，六种合计最多 600 分；重复同一结果不累计排行榜积分。每日按 UTC 划分；同分按发现数量、集齐当前伙伴的最早时间排序。榜单最多显示 50 位。
+- 匿名第一方 HttpOnly cookie 识别发布者，无需邮箱、账户。故事 ID 保证重试不重复入库。数据库只保留昵称、伙伴、强度、故事 ID、时间及匿名标识，不保留回答。隐私页可移除自己的公共记录。
+- 每个匿名浏览器每天最多发布 20 条、两次发布至少间隔 10 秒。游玩不受此限制。这些是基础提交限制，不构成强身份认证或全面反作弊系统。
+- 六色龙图鉴、本机收藏筛选、四篇官方 Dragonkind 实用攻略、本机重试提醒、关于／来源／隐私／反馈／404。
+- 16 条路由预渲染；独立 title/description/canonical/OG、sitemap、robots 与 favicon。结果页不索引，未知页面返回真正 HTTP 404。
 
-## 本地使用
+## 本地预览
 
 ```sh
 npm install
-npm run dev -- --port 4173 --strictPort
 npm run build
-npm run preview -- --host 127.0.0.1 --port 4174 --strictPort
-npm test
-npm run test:sites
+npm run db:local
+npm run preview:cf
 ```
 
-当前交付时已启动生产预览：<http://127.0.0.1:4174/>。
+完整的 Cloudflare Worker + D1 预览：[http://127.0.0.1:4175/](http://127.0.0.1:4175/)。使用本地持久化数据库 `.wrangler/state/`，不会访问线上 D1。
 
-技术实现为 React + TypeScript + Vite。构建后使用 React 服务端渲染生成静态页面，攻略正文和首页内容无需依赖客户端执行才出现。字体自托管，仅包含所需拉丁字集；插画使用 WebP，手机首屏使用较小版本。没有账户、广告或分析 SDK。两种字体的 OFL 版权与许可原文保留在 `public/licenses/`，随静态资源一同分发。
-
-## 目录与规则
-
-- `src/trial.ts`：剧情、原创龙资料、计分与存档验证。修改会影响结果的规则时增加 `RULE_VERSION`。
-- `src/content.ts`：攻略、来源、路由和页面元信息。
-- `src/App.tsx` / `src/styles.css`：页面与交互。
-- `scripts/prerender.tsx`：静态 HTML 和 sitemap。
-- `public/images/`：首屏、六种龙、品牌徽记与分享封面。
-- `qa/` 与 `design-qa.md`：实际浏览器截图、设计对照和验证记录。
-
-原有 `design/` 是用户已有的未跟踪设计资料，本轮提交没有将其顺带提交。原始生成大图在忽略的 `assets-source/` 中，运行所需的压缩资源已全部包含于 `public/`。
-
-## 数据与边界
-
-localStorage 保存已确认的回答、题号、收藏 ID 和提醒结束时刻。没有存储权限时，本次会话仍能完成答题并显示结果，屏幕阅读器会提示无法持久保存；答题区不显示常规存储说明。结果链接只携带原创伙伴 ID 与规则版本，不携带回答或官方账号信息。
-
-PNG 导出在浏览器内生成，提供可展开的预览及再次下载链接。已核验实际生成图像为 1080×1350。当前内置浏览器的自动化下载事件未返回文件，所以没有宣称已通过操作系统下载落盘测试；普通浏览器和手机端保存仍建议在上线前做一次人工验收。
-
-## 上线前剩余配置
-
-本轮未发布网站、未修改 DNS、未绑定域名。上线时需要：
-
-1. 使用下方 Cloudflare Workers Static Assets 配置部署 `dist/client/`。深层路由直接读取对应预渲染 HTML，未知地址使用 `404.html` 并返回 HTTP 404。
-2. 绑定 `threshingdaygame.xyz`、配置 HTTPS；所有 canonical 和 sitemap 已使用该域名。
-3. 提供真实纠错联系方式后替换当前复制反馈说明；现在没有收件邮箱或反馈 API。
-4. 根据正式托管服务的日志处理方式更新隐私说明。
-
-保留了原模板的 `worker/index.js`、Sites 构建脚本和打包测试。若后续交给 Sites，当前包具备所需 `dist/client/index.html`、`dist/server/index.js` 和 `dist/.openai/hosting.json`；域名、缓存与 404 配置仍应在实际托管环境核验。
-
-插画为 AI 辅助制作的原创粉丝作品，名字、人格含义、剧情和算法均是本站创作。官方游戏入口保持独立，不嵌入、不冒充、不预测官方结果。
-
-## Cloudflare 部署适配
-
-最终托管目标为 Cloudflare。本站为预渲染静态站，采用 Workers Static Assets，无需运行 Node 服务、D1 或 R2。`wrangler.jsonc` 指向 `dist/client/`，按 Cloudflare 官方 SSG 路由模式使用 `auto-trailing-slash` 和 `404-page`，不使用首页 SPA fallback。攻略深层直达保留完整 HTML 和独立 SEO；分享结果的查询参数由客户端读取。
+开发界面可运行 `npm run dev -- --port 4173 --strictPort`；4173 与 Vite 生产预览 4174 的 `/api/` 代理指向本地 CF 4175，需要保持 `preview:cf` 运行。同源校验只对已经匹配本地预览 origin 的请求做映射；外来 origin 仍被 Worker 拒绝。
 
 ```sh
-npm run build
-npm run preview:cf     # 本地 CF 运行时，127.0.0.1:4175
-npm run check:cf       # 只检查并打包，不发布
-# 用户要求正式发布且已配置 Cloudflare 账户后：
-npm run deploy:cf
+npm test              # 路径、强度、名字与存储验证
+npm run test:community # 独立临时 workerd/D1，验证发布、幂等、排名、跨日和移除
+npm run test:sites     # 原模板兼容检查
+npm run check:cf       # 只打包检查，不上传、不发布
 ```
 
-CF Dashboard / Git 构建：构建命令 `npm run build`，部署命令 `npx wrangler deploy`。部署命令不能指向旧的 Sites `worker/index.js`，该文件保留兼容原模板；Cloudflare 使用独立的无 Worker 脚本静态资源配置。`public/_headers` 给带内容哈希的 `/assets/` 设置长缓存，HTML 和文件名固定的图片保持 Cloudflare 默认重新验证策略。开发工具及版本由 package-lock 固定。
+`test:community` 使用 Wrangler 已安装的 Miniflare 及其 v4 选项兼容转换器，数据库是一次性的，测试数据不会进入预览或生产数据库。
 
-当前配置没有 `account_id`、生产域名 route 或账户凭据，也不会自动修改 DNS。正式发布时再将 `threshingdaygame.xyz` 绑定到此 Worker 并核对 HTTPS；现有 canonical/sitemap 已使用这个域名。
+## Cloudflare 上线配置
 
-参考：[Cloudflare SSG / 404 路由文档](https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/)、[静态资源响应头文档](https://developers.cloudflare.com/workers/static-assets/headers/)。
+采用 **Cloudflare Workers + Static Assets + D1**。`cloudflare/worker.ts` 只接管 `/api/*`；静态页面读取 `dist/client/` 的预渲染 HTML，保留 `auto-trailing-slash`、`404-page` 和哈希资源长缓存。不需要 Node 服务器或 R2。
+
+本轮仅在本地验证，**未部署、未修改 DNS、未创建线上数据库**。配置中的 D1 ID 是本地占位 ID。用户要求上线后需完成：
+
+1. 在已授权的 Cloudflare 账户创建 `threshingday-community` D1，将返回的真实 `database_id` 写入 `wrangler.jsonc`。
+2. 对生产 D1 执行迁移：`npx wrangler d1 migrations apply threshingday-community --remote`。
+3. `npm run deploy:cf` 构建并部署 Worker 与静态资源，再绑定 `threshingdaygame.xyz` 并核对 HTTPS。
+4. 在实际域名验证发布 cookie、每日／总榜、龙墙、页面直达、未知路由 404，并按真实托管日志策略维护隐私说明。
+
+部署不能使用原模板 `worker/index.js`。该文件及 `.openai/hosting.json`、`scripts/prepare-sites-build.mjs`、`tests/sites-worker.test.mjs` 原样保留，满足既有 Sites 打包约定；Sites 静态预览本身不提供 D1 社区 API。
+
+参考：[Cloudflare D1 入门](https://developers.cloudflare.com/d1/get-started/)、[静态资源完整应用路由](https://developers.cloudflare.com/workers/static-assets/routing/full-stack-application/)、[SSG 与 404](https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/)。
+
+## 维护
+
+- `src/trial.ts`：剧情、原创伙伴、匹配与存档验证；结果规则变动需增加 `RULE_VERSION`。
+- `src/community.ts`：强度公式、昵称校验、公共 API 类型。
+- `src/CommunityUI.tsx`：前三名、榜单、龙墙、可选发布与公共记录移除。
+- `src/App.tsx` / `src/styles.css`：页面、游戏与排版。
+- `src/content.ts`：攻略、来源、路由、SEO；`scripts/prerender.tsx`：完整 HTML 与 sitemap。
+- `cloudflare/worker.ts` / `cloudflare/migrations/`：CF API 与数据库结构。
+- `design-qa.md` / `qa/community/`：截图对照与验证证据。截图中的 QA Rider 是本机流程测试记录，不是用户流量。
+
+字体与插画自托管；两套字体的 OFL 许可在 `public/licenses/`。作品为 AI 辅助制作的原创粉丝插画，名字、剧情与规则均为本站创作。官方 Dragonkind 入口独立，本站不会读取或改变官方账号。
+
+PNG 由浏览器内生成，已有 1080×1350 预览验证；内置浏览器下载工具未返回操作系统落盘文件，因此不宣称通过实际下载落盘验收。反馈页仍只帮助复制纠错文字，未设置收件邮箱或提交后台。
+
+`design/` 为此前已有的未跟踪设计资料，不纳入本轮提交；原始大图在忽略的 `assets-source/` 中，所有运行资源包含在 `public/`。

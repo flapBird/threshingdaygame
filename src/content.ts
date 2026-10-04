@@ -218,6 +218,8 @@ export const staticPaths = [
   "/",
   "/play/",
   "/result/",
+  "/leaderboard/",
+  "/dragon-wall/",
   "/guides/",
   ...guides.map((g) => `/guides/${g.slug}/`),
   "/dragons/",
@@ -235,8 +237,8 @@ export function pageMeta(path: string) {
     };
   const pages: Record<string, [string, string]> = {
     "/": [
-      "Threshing Day Game — Your First Choice Changes Everything",
-      "Play an original eight-choice dragon-bonding fan trial. Discover your dragon, save your result card, and find trusted Dragonkind guides. Free, no account.",
+      "Threshing Day Game — Play, Discover Your Dragon & Join the Rankings",
+      "Play Threshing Day Game free: eight choices, six original dragons, a shareable result card and rider rankings. Discover your bond with no account or cooldown.",
     ],
     "/play/": [
       "Play the Original Fan Trial | Threshing Day Game",
@@ -245,6 +247,14 @@ export function pageMeta(path: string) {
     "/result/": [
       "Your Dragon Bond | Threshing Day Game",
       "Keep your original fan dragon card, save a portrait, or explore the trial again.",
+    ],
+    "/leaderboard/": [
+      "Rider Leaderboard | Threshing Day Game",
+      "Discover six original dragons and climb daily or all-time rider rankings. Each companion counts your strongest published bond.",
+    ],
+    "/dragon-wall/": [
+      "Dragon Wall — Latest Rider Bonds | Threshing Day Game",
+      "Meet the latest dragon companions published by real riders. Explore six colors and share your own original fan bond.",
     ],
     "/guides/": [
       "Dragonkind Guides & Practical Help | Threshing Day Game",
@@ -264,7 +274,7 @@ export function pageMeta(path: string) {
     ],
     "/privacy/": [
       "Privacy | Threshing Day Game",
-      "How this website stores trial progress, saved cards and reminders on your device.",
+      "How trial progress stays on your device, how optional public bonds are stored, and how to remove your published results.",
     ],
     "/contact/": [
       "Feedback & Corrections | Threshing Day Game",

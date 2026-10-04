@@ -13,5 +13,10 @@
     "noEmit": true,
     "types": ["node", "vite/client"]
   },
-  "include": ["src", "scripts/prerender.tsx", "tests/trial.test.ts"]
+  "include": [
+    "src",
+    "cloudflare",
+    "scripts/prerender.tsx",
+    "tests/trial.test.ts"
+  ]
 }

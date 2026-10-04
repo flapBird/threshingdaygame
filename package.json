@@ -11,7 +11,9 @@
     "test:sites": "node --test tests/sites-worker.test.mjs",
     "preview:cf": "wrangler dev --local --ip 127.0.0.1 --port 4175",
     "check:cf": "wrangler deploy --dry-run",
-    "deploy:cf": "npm run build && wrangler deploy"
+    "deploy:cf": "npm run build && wrangler deploy",
+    "test:community": "wrangler deploy --dry-run --outdir dist/cf-test && node --test tests/community-worker.test.mjs",
+    "db:local": "wrangler d1 migrations apply threshingday-community --local"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.8",

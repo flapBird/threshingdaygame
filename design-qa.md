@@ -1,73 +1,58 @@
-# 首版设计与功能验收
+# Design QA · 2026-10-05
 
-final result: passed
+**final result: passed**
 
-日期：2026-10-04。范围：本地首版的视觉与可用交互，不代表域名发布或所有浏览器的系统下载验收。
+## Source and implementation
 
-## 对照来源与方法
+- Source visual truth: `qa/community/reference-hero.png` (user screenshot, 2690 × 1254) and `qa/community/reference-podium.png` (2712 × 642).
+- Reference: [threshingdaygame.com](https://threshingdaygame.com/). Homepage HTML was reviewed; competitor playthrough, traffic and ranking integrity were not verified.
+- Implementation: [Cloudflare local preview](http://127.0.0.1:4175/).
+- Desktop: 1280 × 720 CSS viewport. `qa/community/home-desktop-final.png` is the first 720px of the desktop full-page capture; full-page capture `home-full-final.png` (1280 × 3068). `home-overview.png` is its first 920px, cropped without altering page content.
+- Responsive: 390 × 844 (`game-mobile-final.png`, `home-mobile-final.png`); 320 × 812 (`leaderboard-320.png`); 768 × 1024 (`home-tablet.png`). All measured document widths equal viewport widths.
+- Visible handoff: enabling the in-app preview resized its pane to 397 × 656; `home-handoff-397.png` records this additional normal visible state. The full keyword and mobile grid remain intact.
+- State: fresh game introduction and genuine empty community in the final desktop capture. Earlier `result-published.png`, `leaderboard-desktop.png`, `wall-desktop.png` show one actual local QA publication; that test record was subsequently removed from the local database.
+- Normalization: source CSS viewport / DPR are unknown. Reference images were resized proportionally to 1280px width, with no inferred exact pixel equivalence. Browser screenshots are 1 screenshot pixel per CSS pixel. This is a layout/hierarchy adaptation retaining the previously approved petrol/gold palette and original artwork, rather than an exact competitor clone.
 
-源图：`design/concepts/03-first-choice.png`，用户选定的第 3 张，1435×1096。
+## Combined comparison evidence
 
-实现：生产构建 <http://127.0.0.1:4174/>，Codex 内置浏览器实际渲染。桌面对照 CSS viewport 1435×1096，读出的页面宽度为 1435；完整页面截图宽度也是 1435，因此按 1:1 像素比较。源图没有浏览器边框。实现完整截图裁取首屏 1435×1096，未拉伸图片。
+- Full view: `qa/community/comparison-full.png` places the normalized reference above the rendered overview in one input. Both were opened and compared together.
+- Focused region: `qa/community/comparison-podium.png` compares the reference podium with the actual page’s podium at the same normalized width. Required because avatars, ranking order and small labels are harder to judge in the full view.
+- Interaction evidence: `game-mobile-final.png` shows a long story and wrapped choice at 390px; `leaderboard-desktop.png` and `wall-desktop.png` show the same published QA result.
 
-- 全幅同屏对照：`qa/comparison-final.jpg`，左侧源图、右侧实现。
-- 控件局部同屏对照：`qa/comparison-panel.jpg`，用于阅读标题、选项、分隔线、勾选及按钮。
-- 实际首屏：`qa/desktop-selected.png`；初始未选：`qa/desktop-initial.png`。
-- 手机：`qa/mobile-home.png`，390px；平板：`qa/tablet-home.png`，768px。
-- 结果与功能：`qa/result-desktop.png`、`qa/mobile-result-full.png`、`qa/mobile-question2.png`、`qa/mobile-guide-full.png`、`qa/timer-ended-full.png`、`qa/export-card-preview.png`。
+## Comparison history and fixes
 
-对照状态为首页第 1 题、选择 A、无键盘焦点/悬停效果。源图中的 A 仅用于样式对照，真实首次访问无预选且按钮禁用。首次截图 API 的普通 viewport 截图只返回 1011px 高，未拿它冒充完整 1096px；后续使用 fullPage 截图并明确裁取。源图后的站点扩展部分没有对应设计图，以同一视觉规范和真实内容验收。
+1. **Before implementation — blocked**: `before.png` showed a missing visible full keyword, dominant full-bleed illustration, generic headline, no What / How, and no community loop. [P1] Replace with centered left introduction / right playable card, full brand/H1, meaningful explanations and connected result publication, podium, leaderboard and wall.
+2. **First visual pass — blocked**: `home-first.png`, `home-mobile-saved.png` and initial game screenshots showed some secondary copy at 10–13px, with uneven mobile feature-pill wrapping. [P2] Raise reading copy to 14–15px and answer rows to 15px, set mobile feature pills to two columns, and condense the hero description to a single coherent paragraph. Remove obsolete layout rules.
+3. **Post-fix pass — passed**: combined `comparison-full.png` / `comparison-podium.png` and final mobile game evidence show complete keyword, aligned introduction/card, consistent spacing, readable controls and an immediately adjacent podium. No actionable P0/P1/P2 remains. Original art, six original dragons, eight choices, real empty seats and a fixed UTC reset description are intentional product differences.
 
-## 修正记录
+## Five fidelity surfaces
 
-| 发现                                                     | 影响                                   | 修正与复查                                                                                                                      |
-| -------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| P2：最初右侧剧情多了两句，选项与按钮下移；主区长到 909px | 首屏节奏偏离源图，底部官方帮助区被挤出 | 第一题恢复源图短文案，重调标题与剧情间距。主区复测 884px，帮助区起点 y=966；按钮 y=781、高 70px。最终同屏对照确认。             |
-| P2：最初展示字体视觉偏小                                 | 主标题与问题层级不够接近设计           | 保持自托管 Cormorant Garamond / Inter，调整桌面标题与控件字号、行高。局部对照确认问题保持单行、选项可读。                       |
-| P2：底部帮助标题在桌面换成两行                           | 分区高度和源图阅读节奏漂移             | 给标题固定 373px 栏宽，29px 展示字号；最终 DOM 高度 34.8px，回到单行。                                                          |
-| P2：品牌图片的 screen 混合产生亮色方块                   | 徽记与顶栏不融合                       | 改为 lighten，最终截图看不到亮色方块，金色龙徽仍清晰。                                                                          |
-| P2：768px 双栏裁掉龙头，题目下方空白过多                 | 平板失去主要图像主体，阅读区过窄       | ≤900px 改为上下排版，插画 420px、裁切位置 22%，去掉剧情最小高度。最新平板截图可见龙头、月亮与旅人；答题区全宽，页面无横向溢出。 |
-| P2：卡片导出原本直接缩放图片，可能压扁形象               | 下载图与页面画像比例不一致             | 使用源图等比裁切再绘制。实际生成图像 naturalWidth=1080、naturalHeight=1350；预览截图确认轮廓、文字和底部身份标签。              |
+- **Fonts / typography**: self-hosted Cormorant Garamond 400/500 for display and Inter 400/500 for interface. Full desktop H1 uses a controlled 60–86px scale and two lines, body/interface copy has a clearer hierarchy, long questions and answer rows wrap naturally. The competitor’s all-caps display styling is intentionally not copied.
+- **Spacing / layout rhythm**: centered 1180px content, 70px desktop hero gap, contained right artwork, matching small utility cards and a single podium strip. Mobile collapses to one column, two-by-two feature labels and readable answer rows. Table and navigation remain usable at 320px.
+- **Colors / tokens**: retained original petrol (#0b2023), ivory (#f3eee4) and antique gold (#d4b780). A light How section separates explanatory content without adding competing accents. Gold marks actions, score and selection; muted body text remains readable on dark surfaces. The rival’s brown/orange palette is an intentional difference.
+- **Image quality**: existing original compressed WebP art remains sharp, properly cropped and masked. Original emblem, dragon portraits and bridge illustration are retained. Phosphor supplies ordinary UI icons; no decorative custom SVG, CSS-art replacement or invented avatars were used. Empty podium seats use dimmed original portraits and explicitly say Seat awaits.
+- **Copy / content**: visible complete brand in header, H1, footer, result and PNG export; clear purpose, eight-choice/six-dragon rules, What / How and FAQ. Public publication, scoring and privacy copy match the implemented behavior. No fabricated player counters, scores or rarity claims.
 
-第二轮截图一度因热更新失去选择状态，`qa/comparison-pass2.jpg` 只保留为过程记录，未据此宣称选中态通过。最终重新选择 A，移开指针并去掉按钮焦点后再捕获。最后一轮复查未发现未解决的 P0/P1/P2 视觉问题。
+## Functional verification
 
-## 五项视觉核验
+- Build / TypeScript / prerender: passed; 16 static routes and sitemap.
+- Unit checks: 10 passed, including all 6561 routes, all six 100% strength maxima, invalid inputs and storage failure behavior.
+- Original Sites packaging checks: 4 passed; protected template files unchanged.
+- Separate workerd / temporary D1 integration: passed. Verified publication, server score computation, idempotent retries (including tampered retry answers), cross-origin rejection, publication interval limit, per-dragon maximum ranking, UTC-day exclusion, all-time inclusion, public removal and empty state.
+- CF HTTP checks: all 16 routes and metadata passed; unknown page/API return 404, leaderboard slash redirect returns 307, and community is genuinely empty after test cleanup. Vite proxy accepts same-origin requests and still rejects a foreign origin.
+- Local D1 migration and Cloudflare dry-run: passed. Production database is not provisioned; config retains a clearly documented placeholder ID.
+- Supplementary light-page check: privacy removal reuses the existing light-page control theme; DOM confirms foreground #0b2023. Evidence: `qa/community/privacy-final.png`.
+- Browser: eight answers → result → optional publish → daily/all-time ranking → color-filterable wall; double-click, keyboard Enter, Back, restart, refresh, mobile menu and long mobile story checked. Application console error check returned no errors.
+- Remaining verification limit: OS-level PNG saving and production-domain behavior await actual browser / deployment acceptance. Existing in-browser PNG preview remains available.
 
-| 核验面     | 结论                                                                                                                                                                       |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 字体与排版 | 展示衬线与正文无衬线分工明确，主标题两行、题目一行；手机自然换行。注释和状态文案已增大；实际字体由本站提供。                                                               |
-| 间距与布局 | 82px 顶栏、桌面 60/40、884px 主区、130px 官方帮助条。选择区、70px 主按钮和分隔线保留源图构成。平板和手机改为上下排版。                                                     |
-| 颜色与状态 | 使用约定的深青黑、象牙白与哑金。选中有边框及勾选；禁用按钮与未选提示清楚；键盘焦点有额外描边。金色按钮采用平色，未照搬源图渲染出的纹理。                                   |
-| 图像质量   | 真实原创位图而非 CSS/SVG 替代插画。主图、六张龙图及徽记均实际加载；WebP 细节清楚，无白边。手机用轻量图；平板修复主体裁切。源图为构图参考，运行中使用独立生成的可复用画面。 |
-| 文案与内容 | 第一题恢复源图文案；官方帮助条替换设计图中不自然的书籍提示。官方游戏、社区报告、原创剧情和结果保持清楚区分。无伪造掉率、玩家量或官方算法。                                 |
+## Implementation checklist
 
-图标使用统一 Phosphor 图标组，按钮和导航有文字说明。没有用自制 SVG 图形代替龙图。源图未定义的空状态、重玩、存储不可用、复制失败和导出失败均补充可读说明。
+- [x] Complete visible keyword and coherent hero description.
+- [x] Right-side game and direct answer progression.
+- [x] What / How and expanded FAQ.
+- [x] Genuine data for podium, daily / all-time leaderboard and six-color wall.
+- [x] Optional public publishing with server scoring and removal controls.
+- [x] Desktop / tablet / 390px / 320px checks.
+- [x] CF Worker / D1 migration and packaging readiness.
 
-## 实际交互核验
-
-- 初始无选中项，Continue 禁用；选择后启用。键盘 Tab 能到 Continue，题目切换将焦点移到新标题。
-- 走完八题产生 Brannoc 结果；上一题恢复已有选择，改选后下一题清空，刷新仍停在已保存的题号。
-- 结果链接复制显示成功状态；本机收藏后图鉴 My companions 显示 Brannoc，Blue 筛选只显示 Aureth。
-- 重试计时器空输入给出错误；输入 1 分钟后显示 `00:01:00`，刷新后显示剩余秒数，实际结束后显示 `00:00:00` 和结束提示。
-- 手机菜单能打开并导航到攻略；游戏剧透默认收起，手动展开后显示场景内容。
-- 360 / 390 / 768 / 1024px 页面宽度与 scrollWidth 一致；1435px 桌面也无横向溢出。截图查看没有控件重叠。768px 修正后再次读出 width=scrollWidth=768。
-- 生产版首页与攻略深层直达正常，未捕获到应用错误或警告；预渲染页面正确水合。
-- PNG 导出成功生成可见图像，像素尺寸及视觉均核验，提供展开预览和再次下载链接。内置浏览器两次自动化下载事件超时，未获得落盘文件；原生 Chrome 因电脑锁定无法补测。**系统文件保存仍未人工核验**，此限制已记录于 README，不把生成成功当作落盘成功。
-
-## 工程验证
-
-- `npm run build` 通过：TypeScript 检查、Vite 构建、14 路由预渲染、Sites 包生成。
-- `npm test`：8 项通过；穷举全部 6561 种回答，六种结果可达、计分一致、无随机结果，异常存档与时长边界通过。另 3 项回归测试验证存储被禁用、配额写入失败和删除失败时，本次会话不会回读陈旧进度。
-- `npm run test:sites`：4 项通过；现有静态资源、fallback、非页面请求、打包文件核验。
-- Prettier 检查通过。
-- 构建内容检查：14 页有独立标题、canonical、OG、H1 和路由标记；图片引用存在；结果页 noindex；sitemap 排除结果页。
-
-首版可以在本地体验。正式域名、HTTP 404 托管规则及真实反馈联系方式尚未配置，具体边界见 README。
-
-## 用户反馈后的排版与交互调整 · 2026-10-04
-
-final result: passed
-
-本节覆盖首版中固定高度、较大字号和二次确认的结论。按用户反馈，当前版本改为流式主区和题目字号、紧凑边框选项、一键换题及手机自动定位；删除指定辅助小字，品牌不显示.xyz。增加Cloudflare Static Assets配置和真实404，保留原有Sites模板。
-
-本轮实际截图、逐步审查、尺寸、源图对照及CF本地运行时验证见 [排版审查记录](qa/typography/audit.md)。普通桌面首屏为1280×720，手机412×681；没有将未生效的viewport覆盖当作实测。选定源图仍用于风格参考，用户新反馈优先于原图像素尺度。
+No remaining visual fixes required for this refinement. Production setup is documented in README.md.
