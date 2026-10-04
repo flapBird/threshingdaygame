@@ -8,7 +8,10 @@
     "build": "tsc --noEmit && vite build && node --import tsx scripts/prerender.tsx && node scripts/prepare-sites-build.mjs",
     "test": "node --import tsx --test tests/*.test.ts",
     "preview": "vite preview",
-    "test:sites": "node --test tests/sites-worker.test.mjs"
+    "test:sites": "node --test tests/sites-worker.test.mjs",
+    "preview:cf": "wrangler dev --local --ip 127.0.0.1 --port 4175",
+    "check:cf": "wrangler deploy --dry-run",
+    "deploy:cf": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.8",
@@ -25,6 +28,7 @@
     "@types/react-dom": "^19.2.0",
     "prettier": "^3.9.9",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.147.0"
   }
 }

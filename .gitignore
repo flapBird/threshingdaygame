@@ -3,3 +3,5 @@ dist/
 assets-source/
 .DS_Store
 *.log
+
+.wrangler/

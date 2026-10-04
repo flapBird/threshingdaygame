@@ -1,0 +1,43 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "location": null
+  },
+  {
+    "path": "/guides/code-not-received/",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "location": null
+  },
+  {
+    "path": "/result/?dragon=brannoc&v=1",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "location": null
+  },
+  {
+    "path": "/this-route-does-not-exist/",
+    "status": 404,
+    "contentType": "text/html; charset=utf-8",
+    "location": null
+  },
+  {
+    "path": "/assets/missing-file.js",
+    "status": 404,
+    "contentType": "text/html; charset=utf-8",
+    "location": null
+  },
+  {
+    "path": "/guides/code-not-received",
+    "status": 307,
+    "contentType": null,
+    "location": "/guides/code-not-received/"
+  },
+  {
+    "path": "/assets/index-D_8-NWTS.css",
+    "status": 200,
+    "cacheControl": "public, max-age=31536000, immutable"
+  }
+]

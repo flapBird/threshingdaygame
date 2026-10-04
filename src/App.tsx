@@ -99,9 +99,7 @@ function Header({ path }: { path: string }) {
     <header className="site-header">
       <Link to="/" className="brand">
         <img src="/images/emblem.webp" alt="" width="44" height="44" />
-        <span>
-          Threshing Day <span className="brand-domain">.xyz</span>
-        </span>
+        <span>Threshing Day</span>
       </Link>
       <button
         className="menu-button"
@@ -138,7 +136,7 @@ function Footer() {
     <footer className="site-footer">
       <div>
         <Link to="/" className="footer-brand">
-          Threshing Day <span>.xyz</span>
+          Threshing Day
         </Link>
         <p>A little courage. A story of your own.</p>
       </div>
@@ -159,11 +157,6 @@ function Footer() {
 function OfficialStrip() {
   return (
     <section className="official-strip" aria-label="Official game help">
-      <h2>Playing the official Dragonkind?</h2>
-      <p>
-        Find login help and keep track
-        <br className="desktop-break" /> of your next attempt.
-      </p>
       <Link to="/guides/code-not-received/">
         Login & code help <ArrowUpRight size={18} />
       </Link>
@@ -178,9 +171,19 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     [step, setStep] = useState(0),
     [selected, setSelected] = useState<number | null>(null),
     [loaded, setLoaded] = useState(false),
+    [transitioning, setTransitioning] = useState(false),
     [storageOK, setStorageOK] = useState(true),
     [hasSaved, setHasSaved] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const advancingRef = useRef(false);
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (advanceTimer.current !== null) clearTimeout(advanceTimer.current);
+    },
+    [],
+  );
   useEffect(() => {
     const saved = parseSavedRun(read(RUN_KEY));
     if (saved) {
@@ -198,23 +201,42 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
         JSON.stringify({ version: RULE_VERSION, answers: a, step: s }),
       ),
     );
-  const focus = () => requestAnimationFrame(() => titleRef.current?.focus());
-  const next = () => {
-    if (selected === null) return;
-    const a = [...answers.slice(0, step), selected];
-    setAnswers(a);
-    setHasSaved(true);
-    if (step === 7) {
-      save(a, step);
-      navigate("/result/");
-      return;
-    }
-    setStep(step + 1);
-    setSelected(null);
-    save(a, step + 1);
-    focus();
+  const focus = () =>
+    requestAnimationFrame(() => {
+      titleRef.current?.focus({ preventScroll: true });
+      if (window.matchMedia("(max-width: 900px)").matches) {
+        panelRef.current?.scrollIntoView({
+          block: "start",
+          behavior: "instant",
+        });
+      }
+    });
+  const next = (choiceIndex: number) => {
+    if (!loaded || advancingRef.current) return;
+    advancingRef.current = true;
+    setTransitioning(true);
+    setSelected(choiceIndex);
+    // Briefly show the selected answer and ignore a double click on the next scene.
+    advanceTimer.current = setTimeout(() => {
+      const a = [...answers.slice(0, step), choiceIndex];
+      setAnswers(a);
+      setHasSaved(true);
+      if (step === 7) {
+        save(a, step);
+        navigate("/result/");
+      } else {
+        setStep(step + 1);
+        setSelected(null);
+        save(a, step + 1);
+        focus();
+      }
+      advancingRef.current = false;
+      setTransitioning(false);
+      advanceTimer.current = null;
+    }, 220);
   };
   const previous = () => {
+    if (advancingRef.current) return;
     const prev = Math.max(0, step - 1);
     setStep(prev);
     setSelected(answers[prev] ?? null);
@@ -222,6 +244,7 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     focus();
   };
   const restart = () => {
+    if (advancingRef.current) return;
     setAnswers([]);
     setStep(0);
     setSelected(null);
@@ -251,7 +274,6 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
             />
           </picture>
           <div className="hero-copy">
-            <Label>Original fan trial</Label>
             {step === 0 ? (
               <>
                 <h1>
@@ -283,7 +305,7 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
           </div>
           <span className="art-credit">Original fan artwork</span>
         </div>
-        <div className="trial-panel">
+        <div className="trial-panel" ref={panelRef}>
           {answers.length === 8 && hasSaved ? (
             <div className="saved-bond">
               <Label>Your story is waiting</Label>
@@ -307,14 +329,12 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
           ) : (
             <>
               <div className="step-header">
-                <span>
-                  {String(step + 1).padStart(2, "0")} / 08{" "}
-                  <span className="chapter-name">— {scene.chapter}</span>
-                </span>
+                <span>{String(step + 1).padStart(2, "0")} / 08 </span>
                 {step > 0 && (
                   <button
                     className="back-button"
                     aria-label="Previous question"
+                    disabled={transitioning}
                     onClick={previous}
                   >
                     <CaretLeft size={17} />
@@ -327,7 +347,7 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
                 role="progressbar"
                 aria-valuemin={0}
                 aria-valuemax={8}
-                aria-valuenow={step}
+                aria-valuenow={step + 1}
                 aria-label={`Question ${step + 1} of 8`}
               >
                 <span style={{ width: `${((step + 1) / 8) * 100}%` }} />
@@ -336,19 +356,30 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
                 {scene.title}
               </h2>
               <p className="scene-story">{scene.story}</p>
-              <fieldset className="choices">
-                <legend className="sr-only">What do you do?</legend>
+              <div
+                className="choices"
+                role="group"
+                aria-label="Choose your next path"
+              >
+                <p id="choice-instructions" className="sr-only">
+                  Choose an answer to move directly to the next scene.
+                </p>
                 {scene.choices.map((option, i) => (
-                  <label
+                  <button
+                    type="button"
                     className={`choice ${selected === i ? "selected" : ""}`}
                     key={`${step}-${i}`}
+                    disabled={!loaded || transitioning}
+                    aria-describedby="choice-instructions"
+                    onClick={(event) => {
+                      if (event.detail > 1) return;
+                      next(i);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.repeat && ["Enter", " "].includes(event.key))
+                        event.preventDefault();
+                    }}
                   >
-                    <input
-                      type="radio"
-                      name={`scene-${step}`}
-                      checked={selected === i}
-                      onChange={() => setSelected(i)}
-                    />
                     <span className="choice-letter" aria-hidden="true">
                       {String.fromCharCode(65 + i)}
                     </span>
@@ -356,34 +387,25 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
                     <span className="choice-check" aria-hidden="true">
                       {selected === i && <Check size={20} weight="bold" />}
                     </span>
-                  </label>
+                  </button>
                 ))}
-              </fieldset>
-              <button
-                className="button primary continue-button"
-                disabled={selected === null || !loaded}
-                onClick={next}
-              >
-                {step === 7 ? "Discover your dragon" : "Continue the trial"}
-                <ArrowRight size={22} />
-              </button>
-              <p className="storage-note" role="status">
-                {!storageOK
-                  ? "You can keep playing. This browser cannot save your progress."
-                  : selected === null
-                    ? "Choose the answer that feels closest to you."
-                    : "Progress stays on this device."}
-              </p>
+              </div>
+              {!storageOK && (
+                <p className="sr-only" role="status">
+                  You can keep playing. This browser cannot save your progress.
+                </p>
+              )}
               {hasSaved && step > 0 && (
-                <button className="restart-link" onClick={restart}>
+                <button
+                  className="restart-link"
+                  disabled={transitioning}
+                  onClick={restart}
+                >
                   Start over
                 </button>
               )}
             </>
           )}
-          <p className="fan-note">
-            Fan-made story. Does not predict official Dragonkind results.
-          </p>
         </div>
       </section>
       <OfficialStrip />
@@ -514,7 +536,7 @@ async function downloadCard(dragon: Dragon, ranking: string[]) {
   );
   ctx.fillStyle = "#d4b780";
   ctx.font = "20px Inter";
-  ctx.fillText("THRESHINGDAYGAME.XYZ", 64, 1293);
+  ctx.fillText("THRESHING DAY", 64, 1293);
   ctx.fillStyle = "#bac8c5";
   ctx.fillText("Fan-made result", 830, 1293);
   const blob = await new Promise<Blob>((resolve, reject) =>
@@ -657,7 +679,7 @@ function ResultPage() {
           <span>
             {dragon.color} · {dragon.tail}tail
           </span>
-          <small>threshingdaygame.xyz · Fan-made result</small>
+          <small>Threshing Day · Fan-made result</small>
         </div>
       </div>
       <div className="result-copy">
