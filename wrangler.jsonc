@@ -6,7 +6,7 @@
     {
       "binding": "DB",
       "database_name": "threshingday-community",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "1119f199-e88d-4d76-bc5d-86bec6d85d72",
       "migrations_dir": "cloudflare/migrations",
     },
   ],
