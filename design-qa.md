@@ -93,3 +93,29 @@ The following records the previous implementation and its checks; the current us
 - [x] CF Worker / D1 migration and packaging readiness.
 
 No remaining visual fixes required for this refinement. Production setup is documented in README.md.
+
+## Story-card refinement · 2026-10-05
+
+Source: user attachments `codex-clipboard-51dc41fb-9b8f-4443-ade5-fb5f8bb61676.png` (cover), `codex-clipboard-6a0581f0-e68a-4778-8dd9-14ad73e32469.png` (choices), `codex-clipboard-69840e6f-1f8f-43c2-8977-5e1e8df4da68.png` (narrative reveal), and `codex-clipboard-ff540112-95ef-47f8-9a2a-d20eee5de1f9.png` (next scene), supplied under `/var/folders/ll/zfhgnxpx1sl87rndkww8r32w0000gq/T/`.
+
+Scope: adapt the reference's illustrated interactive slides to our original eight-choice story and existing petrol/gold design. This is not a pixel clone or a change to scoring. Existing dragon portraits provide atmospheric scene artwork; they do not announce the player's final companion.
+
+Evidence:
+- `qa/story-card/desktop.jpg`: homepage, first question, no selected answer; 1440 × 1000 CSS viewport, browser capture 1425 × 990 pixels.
+- `qa/story-card/mobile.jpg`: final question and all three choices; 390 × 844 CSS viewport. No horizontal overflow; panel grows for long text.
+- `qa/story-card/comparison.jpg`: source choice card (912 × 995 crop of the 1250 × 1076 attachment) beside our first-question card (519 × 612 CSS crop). Capture coordinates scaled by 1425/1440 and 990/1000; both cards fitted into 520 × 612 comparison regions. The source has four longer answers and a different story, so exact text wrapping and height are intentionally different. This combined focused comparison is readable enough to inspect all controls; the desktop capture supplies surrounding layout context.
+
+Required surfaces reviewed:
+- Typography: original Cormorant headings and Inter body retained; compact 32px desktop/30px mobile scene headings, 15px/14px narrative, no clipping.
+- Layout: full-bleed illustration, overlaid bottom narrative, bordered answers, eight segmented progress marks; min-height instead of fixed-height clipping. Existing left introduction remains intact.
+- Tokens: original deep petrol, ivory and antique gold retained intentionally instead of copying the reference's brown/orange palette. Dark text backing keeps the narrative readable.
+- Imagery: original bridge and dragon illustrations retained; changing crops and artwork, gentle finite camera motion, no placeholders. Image preloading covers the next scene.
+- Content: original story, answers and deterministic matching unchanged; no copied competitor claims or preselected first answer.
+
+Verification: browser-tested start, double-click advancing only once, Back restoring a selection, changed choice, refreshed saved progress, all eight questions through the result, and replay returning to the cover. Console error inspection returned no errors. Reduced-motion CSS disables all story animations and transforms (code-reviewed; OS preference was not changed). Existing build, 10 unit tests and 4 Sites packaging tests pass. Community APIs remain unavailable on this existing Vite preview and display their existing honest error state; no public bond was posted.
+
+Comparison history: first combined review found no actionable P0/P1/P2 mismatch within this adaptation scope. Original art, story length, compact typography and eight rather than seven progress segments are deliberate product constraints.
+
+Implementation checklist: illustrated cover and questions, segmented progress, scene/content entrances, choice feedback, next-art preload, responsive flow, reduced-motion fallback, original scoring and controls preserved.
+
+final result: passed

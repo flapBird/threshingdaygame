@@ -3552,3 +3552,221 @@ details p {
     padding: 20px;
   }
 }
+
+/* The trial stays inside an illustrated story frame from cover to final choice. */
+.story-card {
+  position: relative;
+  isolation: isolate;
+}
+.story-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background: #081a20;
+}
+.story-backdrop img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: story-camera 9s ease-out both;
+}
+.story-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    #06171c18 0%,
+    #06171c30 22%,
+    #06171cba 45%,
+    #06171cf0 78%,
+    #06171cfa 100%
+  );
+}
+.story-card .game-intro,
+.story-card .trial-panel {
+  min-height: 610px;
+}
+.story-card .game-intro::after {
+  display: none;
+}
+.story-card .game-intro-copy {
+  padding: 34px;
+}
+.story-card .trial-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 26px 30px;
+}
+.story-card .step-header {
+  order: 1;
+  margin-top: 12px;
+  min-height: 30px;
+  color: #f0d49d;
+}
+.story-card .back-button {
+  color: #f2e9da;
+  background: #071b20a6;
+  border-radius: 5px;
+  padding: 4px 8px;
+}
+.story-progress {
+  display: flex;
+  gap: 7px;
+  height: 4px;
+}
+.story-progress span {
+  flex: 1;
+  border-radius: 3px;
+  background: #eee8d63d;
+  transition: background 220ms ease;
+}
+.story-progress .complete {
+  background: var(--gold);
+}
+.story-progress .current {
+  background: #f5d9a0;
+  box-shadow: 0 0 12px #d4b78065;
+}
+.story-slide {
+  order: 2;
+  margin-top: auto;
+  padding-top: 90px;
+}
+.story-card .story-slide h2 {
+  color: #f5ead5;
+  font-size: 32px;
+  line-height: 1.08;
+  margin-top: 0;
+  animation: story-copy-in 500ms ease-out both;
+}
+.story-card .scene-story {
+  color: #e1e6df;
+  font-size: 15px;
+  line-height: 1.7;
+  margin-top: 13px;
+  animation: story-copy-in 600ms 70ms ease-out both;
+}
+.story-card .choices {
+  margin-top: 22px;
+  gap: 9px;
+}
+.story-card .choice {
+  background: #07191de3;
+  border: 1px solid #d4b78070;
+  border-left: 3px solid #cfaf70;
+  color: #f1eee5;
+  grid-template-columns: 1fr 20px;
+  min-height: 57px;
+  font-size: 14px;
+  padding: 12px 15px;
+  animation: story-choice-in 420ms ease-out both;
+  animation-delay: calc(160ms + var(--choice-index) * 65ms);
+  transition:
+    background 160ms,
+    border-color 160ms,
+    transform 160ms;
+}
+.story-card .choice-letter {
+  display: none;
+}
+.story-card .choice-check {
+  border: 0;
+  background: none;
+}
+.story-card .choice:hover,
+.story-card .choice:focus-visible {
+  background: #324038ed;
+  border-color: #edcb8b;
+}
+.story-card .choice.selected {
+  background: #594b2eee;
+  border-color: #f3d193;
+}
+.story-card.story-leaving .story-slide {
+  opacity: 0.45;
+  transform: translateX(-8px);
+  transition:
+    opacity 220ms,
+    transform 220ms;
+}
+.story-card .restart-link {
+  color: #c8cfc7;
+  margin-bottom: -8px;
+}
+.story-card .saved-bond {
+  margin-top: auto;
+}
+@keyframes story-camera {
+  from {
+    opacity: 0;
+    transform: scale(1.07);
+  }
+  10% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes story-copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes story-choice-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@media (max-width: 600px) {
+  .story-card .game-intro {
+    min-height: 530px;
+  }
+  .story-card .trial-panel {
+    min-height: 570px;
+    padding: 22px 20px;
+  }
+  .story-card .game-intro-copy {
+    padding: 26px;
+  }
+  .story-slide {
+    padding-top: 70px;
+  }
+  .story-card .story-slide h2 {
+    font-size: 30px;
+  }
+  .story-card .scene-story {
+    font-size: 14px;
+  }
+  .story-card .choice {
+    font-size: 13px;
+    padding: 12px;
+  }
+  .story-progress {
+    gap: 5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-card *,
+  .story-card.story-leaving .story-slide {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1;
+  }
+}

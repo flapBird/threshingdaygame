@@ -174,6 +174,18 @@ function Footer() {
     </footer>
   );
 }
+// Existing original artwork supplies the changing mood of each story slide.
+const trialArtwork = [
+  ["crossing", "50% 38%"],
+  ["crossing", "85% 65%"],
+  ["brannoc", "50% 28%"],
+  ["vesper", "50% 25%"],
+  ["aureth", "50% 25%"],
+  ["solvane", "50% 28%"],
+  ["sylvara", "50% 25%"],
+  ["crossing", "65% 20%"],
+];
+
 function Trial({ fullPage = false }: { fullPage?: boolean }) {
   const [answers, setAnswers] = useState<number[]>([]),
     [step, setStep] = useState(0),
@@ -266,6 +278,12 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     focus();
   };
   const scene = scenes[step];
+  useEffect(() => {
+    // Warm the next illustration without delaying a player's choice.
+    if (!started || step >= scenes.length - 1) return;
+    const nextImage = new Image();
+    nextImage.src = `/images/${trialArtwork[step + 1][0]}.webp`;
+  }, [started, step]);
   return (
     <section
       className={`landing-hero content-width ${fullPage ? "dedicated-play" : ""}`}
@@ -309,19 +327,23 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
         </p>
       </div>
       <div
-        className={`game-card ${started ? "game-started" : ""}`}
+        className={`game-card story-card ${started ? "game-started" : ""} ${transitioning ? "story-leaving" : ""}`}
         ref={panelRef}
         id="play-card"
       >
+        <div className="story-backdrop" aria-hidden="true">
+          <img
+            key={started ? step : "cover"}
+            src={`/images/${started ? trialArtwork[step][0] : "crossing"}.webp`}
+            style={{
+              objectPosition: started ? trialArtwork[step][1] : "50% 38%",
+            }}
+            alt=""
+            fetchPriority="high"
+          />
+        </div>
         {!started ? (
           <div className="game-intro">
-            <img
-              src="/images/crossing.webp"
-              alt="A dragon watches a traveler cross a moonlit stone bridge."
-              width="1200"
-              height="1320"
-              fetchPriority="high"
-            />
             <div className="game-intro-copy">
               <h2>
                 Your dragon
@@ -384,68 +406,85 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
                   )}
                 </div>
                 <div
-                  className="progress-track"
+                  className="story-progress"
                   role="progressbar"
                   aria-valuemin={0}
                   aria-valuemax={8}
                   aria-valuenow={step + 1}
                   aria-label={`Question ${step + 1} of 8`}
                 >
-                  <span style={{ width: `${((step + 1) / 8) * 100}%` }} />
-                </div>
-                <h2 ref={titleRef} tabIndex={-1}>
-                  {scene.title}
-                </h2>
-                <p className="scene-story">{scene.story}</p>
-                <div
-                  className="choices"
-                  role="group"
-                  aria-label="Choose your next path"
-                >
-                  <p id="choice-instructions" className="sr-only">
-                    Choose an answer to move directly to the next scene.
-                  </p>
-                  {scene.choices.map((option, i) => (
-                    <button
-                      type="button"
-                      className={`choice ${selected === i ? "selected" : ""}`}
-                      key={`${step}-${i}`}
-                      disabled={!loaded || transitioning}
-                      aria-describedby="choice-instructions"
-                      onClick={(event) => {
-                        if (event.detail > 1) return;
-                        next(i);
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.repeat && ["Enter", " "].includes(event.key))
-                          event.preventDefault();
-                      }}
-                    >
-                      <span className="choice-letter" aria-hidden="true">
-                        {String.fromCharCode(65 + i)}
-                      </span>
-                      <span>{option.text}</span>
-                      <span className="choice-check" aria-hidden="true">
-                        {selected === i && <Check size={20} weight="bold" />}
-                      </span>
-                    </button>
+                  {scenes.map((_, index) => (
+                    <span
+                      key={index}
+                      className={
+                        index < step
+                          ? "complete"
+                          : index === step
+                            ? "current"
+                            : ""
+                      }
+                    />
                   ))}
                 </div>
-                {!storageOK && (
-                  <p className="sr-only" role="status">
-                    You can keep playing. This browser cannot save your
-                    progress.
-                  </p>
-                )}
-                {hasSaved && step > 0 && (
-                  <button
-                    className="restart-link"
-                    disabled={transitioning}
-                    onClick={restart}
+                <div className="story-slide" key={step}>
+                  <h2 ref={titleRef} tabIndex={-1}>
+                    {scene.title}
+                  </h2>
+                  <p className="scene-story">{scene.story}</p>
+                  <div
+                    className="choices"
+                    role="group"
+                    aria-label="Choose your next path"
                   >
-                    Start over
-                  </button>
-                )}
+                    <p id="choice-instructions" className="sr-only">
+                      Choose an answer to move directly to the next scene.
+                    </p>
+                    {scene.choices.map((option, i) => (
+                      <button
+                        type="button"
+                        className={`choice ${selected === i ? "selected" : ""}`}
+                        key={`${step}-${i}`}
+                        disabled={!loaded || transitioning}
+                        aria-describedby="choice-instructions"
+                        style={{ "--choice-index": i } as React.CSSProperties}
+                        onClick={(event) => {
+                          if (event.detail > 1) return;
+                          next(i);
+                        }}
+                        onKeyDown={(event) => {
+                          if (
+                            event.repeat &&
+                            ["Enter", " "].includes(event.key)
+                          )
+                            event.preventDefault();
+                        }}
+                      >
+                        <span className="choice-letter" aria-hidden="true">
+                          {String.fromCharCode(65 + i)}
+                        </span>
+                        <span>{option.text}</span>
+                        <span className="choice-check" aria-hidden="true">
+                          {selected === i && <Check size={20} weight="bold" />}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  {!storageOK && (
+                    <p className="sr-only" role="status">
+                      You can keep playing. This browser cannot save your
+                      progress.
+                    </p>
+                  )}
+                  {hasSaved && step > 0 && (
+                    <button
+                      className="restart-link"
+                      disabled={transitioning}
+                      onClick={restart}
+                    >
+                      Start over
+                    </button>
+                  )}
+                </div>
               </>
             )}
           </div>
