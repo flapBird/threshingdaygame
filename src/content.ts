@@ -219,7 +219,6 @@ export const guides: Guide[] = [
 export const staticPaths = [
   "/",
   "/play/",
-  "/result/",
   "/leaderboard/",
   "/guides/",
   ...guides.map((g) => `/guides/${g.slug}/`),
@@ -244,10 +243,6 @@ export function pageMeta(path: string) {
     "/play/": [
       "Play the Original Fan Trial | Threshing Day Game",
       "Eight choices. One original dragon companion. Continue your saved trial or start a new story without an account.",
-    ],
-    "/result/": [
-      "Your Dragon Bond | Threshing Day Game",
-      "Keep your original fan dragon card, save a portrait, or explore the trial again.",
     ],
     "/leaderboard/": [
       "Rider Leaderboard | Threshing Day Game",

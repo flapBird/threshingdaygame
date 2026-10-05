@@ -7,6 +7,7 @@ import {
 } from "./CommunityUI";
 import React, { useEffect, useRef, useState } from "react";
 import { HomeFAQ } from "./HomeFAQ";
+import { StoryScene } from "./StoryScene";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -193,7 +194,8 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     [loaded, setLoaded] = useState(false),
     [transitioning, setTransitioning] = useState(false),
     [storageOK, setStorageOK] = useState(true),
-    [hasSaved, setHasSaved] = useState(false),
+    [sharedDragon, setSharedDragon] = useState<Dragon | null>(null),
+    [storyRun, setStoryRun] = useState(0),
     [started, setStarted] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -211,8 +213,16 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
       setAnswers(saved.answers);
       setStep(saved.step);
       setSelected(saved.answers[saved.step] ?? null);
-      setHasSaved(saved.answers.length > 0);
+
       setStarted(saved.answers.length > 0);
+    }
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("v") === String(RULE_VERSION)) {
+      const shared = dragons.find((d) => d.id === params.get("dragon"));
+      if (shared) {
+        setSharedDragon(shared);
+        setStarted(true);
+      }
     }
     setLoaded(true);
   }, []);
@@ -242,11 +252,11 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     advanceTimer.current = setTimeout(() => {
       const a = [...answers.slice(0, step), choiceIndex];
       setAnswers(a);
-      setHasSaved(true);
+
       if (step === 7) {
         save(a, step);
         write("threshingday:run-id:v1", crypto.randomUUID());
-        navigate("/result/");
+        focus();
       } else {
         setStep(step + 1);
         setSelected(null);
@@ -271,13 +281,21 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     setAnswers([]);
     setStep(0);
     setSelected(null);
-    setHasSaved(false);
+    setSharedDragon(null);
+    setStoryRun((run) => run + 1);
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}#play-card`,
+    );
     remove(RUN_KEY);
     remove("threshingday:run-id:v1");
     setStarted(true);
     focus();
   };
   const scene = scenes[step];
+  const completed = answers.length === scenes.length;
+  const showingBond = completed || sharedDragon !== null;
   useEffect(() => {
     // Warm the next illustration without delaying a player's choice.
     if (!started || step >= scenes.length - 1) return;
@@ -327,22 +345,30 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
         </p>
       </div>
       <div
-        className={`game-card story-card ${started ? "game-started" : ""} ${transitioning ? "story-leaving" : ""}`}
+        className={`game-card story-card ${showingBond ? "showing-bond" : ""} ${started ? "game-started" : ""} ${transitioning ? "story-leaving" : ""}`}
         ref={panelRef}
         id="play-card"
       >
-        <div className="story-backdrop" aria-hidden="true">
-          <img
-            key={started ? step : "cover"}
-            src={`/images/${started ? trialArtwork[step][0] : "crossing"}.webp`}
-            style={{
-              objectPosition: started ? trialArtwork[step][1] : "50% 38%",
-            }}
-            alt=""
-            fetchPriority="high"
+        {!showingBond && (
+          <div className="story-backdrop" aria-hidden="true">
+            <img
+              key={started ? step : "cover"}
+              src={`/images/${started ? trialArtwork[step][0] : "crossing"}.webp`}
+              style={{
+                objectPosition: started ? trialArtwork[step][1] : "50% 38%",
+              }}
+              alt=""
+              fetchPriority="high"
+            />
+          </div>
+        )}
+        {showingBond ? (
+          <BondResult
+            earnedAnswers={sharedDragon ? null : answers}
+            sharedDragon={sharedDragon}
+            onRestart={restart}
           />
-        </div>
-        {!started ? (
+        ) : !started ? (
           <div className="game-intro">
             <div className="game-intro-copy">
               <h2>
@@ -369,124 +395,91 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
           </div>
         ) : (
           <div className="trial-panel">
-            {answers.length === 8 && hasSaved ? (
-              <div className="saved-bond">
-                <Label>Your story is waiting</Label>
-                <h2 ref={titleRef} tabIndex={-1}>
-                  You have found
-                  <br />
-                  your dragon.
-                </h2>
-                <p>
-                  Return to your bond, keep your card, or take a different path
-                  through the valley.
-                </p>
-                <Link to="/result/" className="button primary">
-                  See your dragon <ArrowRight size={22} />
-                </Link>
-                <button className="text-button" onClick={restart}>
-                  <ArrowClockwise size={18} />
-                  Begin a new story
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="step-header">
-                  <span>{String(step + 1).padStart(2, "0")} / 08 </span>
-                  {step > 0 && (
-                    <button
-                      className="back-button"
-                      aria-label="Previous question"
-                      disabled={transitioning}
-                      onClick={previous}
-                    >
-                      <CaretLeft size={17} />
-                      Back
-                    </button>
-                  )}
-                </div>
-                <div
-                  className="story-progress"
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={8}
-                  aria-valuenow={step + 1}
-                  aria-label={`Question ${step + 1} of 8`}
+            <div className="step-header">
+              <span>{String(step + 1).padStart(2, "0")} / 08 </span>
+              {step > 0 && (
+                <button
+                  className="back-button"
+                  aria-label="Previous question"
+                  disabled={transitioning}
+                  onClick={previous}
                 >
-                  {scenes.map((_, index) => (
-                    <span
-                      key={index}
-                      className={
-                        index < step
-                          ? "complete"
-                          : index === step
-                            ? "current"
-                            : ""
-                      }
-                    />
+                  <CaretLeft size={17} />
+                  Back
+                </button>
+              )}
+            </div>
+            <div
+              className="story-progress"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={8}
+              aria-valuenow={step + 1}
+              aria-label={`Question ${step + 1} of 8`}
+            >
+              {scenes.map((_, index) => (
+                <span
+                  key={index}
+                  className={
+                    index < step ? "complete" : index === step ? "current" : ""
+                  }
+                />
+              ))}
+            </div>
+            <div className="story-slide" key={`${storyRun}-${step}`}>
+              <StoryScene scene={scene} titleRef={titleRef}>
+                <div
+                  className="choices"
+                  role="group"
+                  aria-label="Choose your next path"
+                >
+                  <p id="choice-instructions" className="sr-only">
+                    Choose an answer to move directly to the next scene.
+                  </p>
+                  {scene.choices.map((option, i) => (
+                    <button
+                      type="button"
+                      className={`choice ${selected === i ? "selected" : ""}`}
+                      key={`${step}-${i}`}
+                      disabled={!loaded || transitioning}
+                      aria-describedby="choice-instructions"
+                      style={{ "--choice-index": i } as React.CSSProperties}
+                      onClick={(event) => {
+                        if (event.detail > 1) return;
+                        next(i);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.repeat && ["Enter", " "].includes(event.key))
+                          event.preventDefault();
+                      }}
+                    >
+                      <span className="choice-letter" aria-hidden="true">
+                        {String.fromCharCode(65 + i)}
+                      </span>
+                      <span>{option.text}</span>
+                      <span className="choice-check" aria-hidden="true">
+                        {selected === i && <Check size={20} weight="bold" />}
+                      </span>
+                    </button>
                   ))}
                 </div>
-                <div className="story-slide" key={step}>
-                  <h2 ref={titleRef} tabIndex={-1}>
-                    {scene.title}
-                  </h2>
-                  <p className="scene-story">{scene.story}</p>
-                  <div
-                    className="choices"
-                    role="group"
-                    aria-label="Choose your next path"
+                {!storageOK && (
+                  <p className="sr-only" role="status">
+                    You can keep playing. This browser cannot save your
+                    progress.
+                  </p>
+                )}
+                {step > 0 && (
+                  <button
+                    className="restart-link"
+                    disabled={transitioning}
+                    onClick={restart}
                   >
-                    <p id="choice-instructions" className="sr-only">
-                      Choose an answer to move directly to the next scene.
-                    </p>
-                    {scene.choices.map((option, i) => (
-                      <button
-                        type="button"
-                        className={`choice ${selected === i ? "selected" : ""}`}
-                        key={`${step}-${i}`}
-                        disabled={!loaded || transitioning}
-                        aria-describedby="choice-instructions"
-                        style={{ "--choice-index": i } as React.CSSProperties}
-                        onClick={(event) => {
-                          if (event.detail > 1) return;
-                          next(i);
-                        }}
-                        onKeyDown={(event) => {
-                          if (
-                            event.repeat &&
-                            ["Enter", " "].includes(event.key)
-                          )
-                            event.preventDefault();
-                        }}
-                      >
-                        <span className="choice-letter" aria-hidden="true">
-                          {String.fromCharCode(65 + i)}
-                        </span>
-                        <span>{option.text}</span>
-                        <span className="choice-check" aria-hidden="true">
-                          {selected === i && <Check size={20} weight="bold" />}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                  {!storageOK && (
-                    <p className="sr-only" role="status">
-                      You can keep playing. This browser cannot save your
-                      progress.
-                    </p>
-                  )}
-                  {hasSaved && step > 0 && (
-                    <button
-                      className="restart-link"
-                      disabled={transitioning}
-                      onClick={restart}
-                    >
-                      Start over
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
+                    Start over
+                  </button>
+                )}
+              </StoryScene>
+            </div>
           </div>
         )}
       </div>
@@ -663,14 +656,24 @@ async function downloadCard(dragon: Dragon, ranking: string[]) {
   anchor.click();
   return { url, filename: anchor.download };
 }
-function ResultPage() {
-  const [dragon, setDragon] = useState<Dragon | null>(null),
-    [ranking, setRanking] = useState<string[]>([]),
-    [ready, setReady] = useState(false),
-    [saved, setSaved] = useState(false),
+function BondResult({
+  earnedAnswers,
+  sharedDragon,
+  onRestart,
+}: {
+  earnedAnswers: number[] | null;
+  sharedDragon: Dragon | null;
+  onRestart: () => void;
+}) {
+  const result = earnedAnswers ? getResult(earnedAnswers) : null;
+  const dragon = result?.dragon ?? sharedDragon!;
+  const ranking = result?.ranking.slice(0, 2) ?? [dragon.trait];
+  const [saved, setSaved] = useState(false),
     [busy, setBusy] = useState(false),
     [message, setMessage] = useState("");
-  const [earnedAnswers, setEarnedAnswers] = useState<number[] | null>(null);
+  const [imageReady, setImageReady] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const [exported, setExported] = useState<{
     url: string;
     filename: string;
@@ -682,53 +685,30 @@ function ResultPage() {
     [exported],
   );
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search),
-      id = params.get("dragon");
-    let found: Dragon | undefined;
-    if (id) {
-      if (params.get("v") === String(RULE_VERSION))
-        found = dragons.find((d) => d.id === id);
-    } else {
-      const run = parseSavedRun(read(RUN_KEY));
-      if (run?.answers.length === 8) {
-        const result = getResult(run.answers);
-        found = result.dragon;
-        setRanking(result.ranking.slice(0, 2));
-        setEarnedAnswers(run.answers);
-      }
+    try {
+      const collection = JSON.parse(read(COLLECTION_KEY) || "[]");
+      setSaved(Array.isArray(collection) && collection.includes(dragon.id));
+    } catch {
+      /* Ignore corrupt collection data. */
     }
-    if (found) {
-      setDragon(found);
-      try {
-        const c = JSON.parse(read(COLLECTION_KEY) || "[]");
-        setSaved(Array.isArray(c) && c.includes(found.id));
-      } catch {
-        /* ignore corrupt data */
-      }
-    }
-    setReady(true);
-  }, []);
-  if (!ready)
-    return (
-      <div className="empty-state">
-        <Label>Your dragon bond</Label>
-        <h1>Opening your story…</h1>
-      </div>
-    );
-  if (!dragon)
-    return (
-      <div className="empty-state">
-        <Label>A new beginning</Label>
-        <h1>Your story is still unwritten.</h1>
-        <p>
-          Complete the eight-choice trial to meet your dragon. If someone shared
-          a card, ask them for its current result link.
-        </p>
-        <Link to="/play/" className="button primary">
-          Begin your story <ArrowRight size={20} />
-        </Link>
-      </div>
-    );
+  }, [dragon.id]);
+  useEffect(() => {
+    if (!imageReady) return;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const reveal = () => setRevealed(true);
+    const timer = setTimeout(reveal, motion.matches ? 0 : 1100);
+    const onMotion = () => {
+      if (motion.matches) reveal();
+    };
+    motion.addEventListener("change", onMotion);
+    return () => {
+      clearTimeout(timer);
+      motion.removeEventListener("change", onMotion);
+    };
+  }, [imageReady]);
+  useEffect(() => {
+    if (revealed) headingRef.current?.focus({ preventScroll: true });
+  }, [revealed]);
   const exportCard = async () => {
     setBusy(true);
     setMessage("");
@@ -744,7 +724,7 @@ function ResultPage() {
     }
   };
   const share = async () => {
-    const url = `${window.location.origin}/result/?dragon=${dragon.id}&v=${RULE_VERSION}`;
+    const url = `${window.location.origin}/?dragon=${dragon.id}&v=${RULE_VERSION}#play-card`;
     try {
       await navigator.clipboard.writeText(url);
       setMessage("Result link copied. Your story is ready to share.");
@@ -777,10 +757,18 @@ function ResultPage() {
       );
   };
   return (
-    <section className="result-page">
+    <section
+      className={`bond-panel ${imageReady ? "bond-arriving" : ""} ${revealed ? "bond-revealed" : ""}`}
+      aria-label="Your dragon bond"
+    >
       <div className="dragon-card">
         <img
           src={`/images/${dragon.id}.webp`}
+          onLoad={() => setImageReady(true)}
+          onError={() => {
+            setImageReady(true);
+            setRevealed(true);
+          }}
           alt={`Original painting of ${dragon.name}, a ${dragon.color.toLowerCase()} dragon`}
           width="800"
           height="1000"
@@ -795,12 +783,16 @@ function ResultPage() {
           <small>Threshing Day Game · Fan-made result</small>
         </div>
       </div>
-      <div className="result-copy">
+      {!revealed && (
+        <p className="bond-reveal-status" role="status">
+          A bond is awakening…
+        </p>
+      )}
+      <div className="result-copy" inert={!revealed} aria-hidden={!revealed}>
         <Label>The beginning of a bond</Label>
-        <h1>
-          {dragon.name}
-          <span>has chosen you.</span>
-        </h1>
+        <h2 ref={headingRef} tabIndex={-1}>
+          {dragon.name} has chosen you.
+        </h2>
         <p className="result-description">{dragon.description}</p>
         <div className="trait-tags">
           {(ranking.length ? ranking : [dragon.trait]).map((t) => (
@@ -808,18 +800,19 @@ function ResultPage() {
           ))}
         </div>
         <blockquote>“{dragon.oath}”</blockquote>
-        <button className="button primary" onClick={exportCard} disabled={busy}>
-          <DownloadSimple size={21} />
-          {busy ? "Preparing your card…" : "Save your dragon card"}
-        </button>
-        <div className="result-actions">
-          <button className="text-button" onClick={share}>
-            <ShareNetwork size={20} />
-            Copy result link
+        <div className="bond-primary-actions">
+          <button
+            className="button primary"
+            onClick={exportCard}
+            disabled={busy}
+          >
+            {busy ? "Saving…" : "Save card"}
           </button>
-          <button className="text-button" onClick={bookmark}>
-            <BookmarkSimple size={20} weight={saved ? "fill" : "regular"} />
-            {saved ? "Saved on this device" : "Keep this companion"}
+          <button className="button secondary" onClick={share}>
+            Share
+          </button>
+          <button className="button secondary" onClick={onRestart}>
+            Go again
           </button>
         </div>
         <p className="action-message" role="status">
@@ -843,22 +836,20 @@ function ResultPage() {
             </a>
           </details>
         )}
-        <PublishBond answers={earnedAnswers} />
+        {earnedAnswers && (
+          <details className="bond-publish">
+            <summary>Share your bond with the riders’ hall</summary>
+            <PublishBond answers={earnedAnswers} />
+          </details>
+        )}
         <p className="fan-note">
           An original fan result, separate from your official Dragonkind bond.
           Names, personalities and artwork are our own.
         </p>
         <div className="result-bottom">
-          <button
-            className="text-button"
-            onClick={() => {
-              remove(RUN_KEY);
-              remove("threshingday:run-id:v1");
-              navigate("/play/");
-            }}
-          >
-            <ArrowClockwise size={18} />
-            Explore another path
+          <button className="text-button" onClick={bookmark}>
+            <BookmarkSimple size={16} weight={saved ? "fill" : "regular"} />
+            {saved ? "Saved on this device" : "Keep this companion"}
           </button>
           <Link to="/dragons/" className="text-link">
             Meet the others <ArrowRight size={18} />
@@ -1183,7 +1174,7 @@ function AtlasPage() {
         {items.map((d) => (
           <Link
             key={d.id}
-            to={`/result/?dragon=${d.id}&v=${RULE_VERSION}`}
+            to={`/?dragon=${d.id}&v=${RULE_VERSION}#play-card`}
             className="atlas-card"
           >
             <img
@@ -1210,7 +1201,8 @@ function AtlasPage() {
         <div className="empty-collection">
           <h2>Your collection begins with a choice.</h2>
           <p>
-            Finish the trial and choose Keep this companion on your result page.
+            Finish the trial and choose Keep this companion in the game’s result
+            card.
           </p>
           <Link to="/play/" className="button primary">
             Begin the trial <ArrowRight size={19} />
@@ -1459,7 +1451,7 @@ function InfoPage({ path }: { path: string }) {
         <h2>Clear your saved story</h2>
         <p>
           Start a new trial to replace progress, remove companions from their
-          result pages, or clear a reminder on the retry page. You can also
+          result cards, or clear a reminder on the retry page. You can also
           remove all site storage using your browser’s site-data controls.
         </p>
         <ClearDeviceData />
@@ -1594,7 +1586,7 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
       .querySelector('meta[name="robots"]')
       ?.setAttribute(
         "content",
-        path === "/result/" || pageMeta(path).title.startsWith("Page Not Found")
+        pageMeta(path).title.startsWith("Page Not Found")
           ? "noindex,follow"
           : "index,follow",
       );
@@ -1609,7 +1601,7 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
       <div
         id="main-content"
         className="page-content"
-        role={["/", "/play/", "/result/"].includes(path) ? "main" : undefined}
+        role={["/", "/play/"].includes(path) ? "main" : undefined}
         tabIndex={-1}
         ref={pageRef}
         key={routeKey}
@@ -1618,8 +1610,6 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
           <Homepage />
         ) : path === "/play/" ? (
           <Trial fullPage />
-        ) : path === "/result/" ? (
-          <ResultPage />
         ) : path === "/leaderboard/" ? (
           <LeaderboardPage />
         ) : path === "/guides/" ? (

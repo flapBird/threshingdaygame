@@ -15,7 +15,7 @@ const esc = (text: string) =>
 for (const route of staticPaths) {
   const meta = pageMeta(route),
     url = `https://threshingdaygame.xyz${route}`;
-  const noindex = route === "/result/" || route === "/404/";
+  const noindex = route === "/404/";
   const html = template
     .replace(/<title>.*?<\/title>/, `<title>${esc(meta.title)}</title>`)
     .replace(
@@ -47,7 +47,7 @@ writeFileSync(
   readFileSync(path.join(root, "404/index.html")),
 );
 const urls = staticPaths.filter(
-  (p) => !["/result/", "/404/", "/play/", "/contact/"].includes(p),
+  (p) => !["/404/", "/play/", "/contact/"].includes(p),
 );
 writeFileSync(
   path.join(root, "sitemap.xml"),
