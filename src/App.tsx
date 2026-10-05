@@ -965,7 +965,7 @@ function Reminder() {
 }
 function GuidesPage() {
   return (
-    <main className="light-page">
+    <main className="editorial-page guides-page">
       <div className="page-intro">
         <Label>The field notes</Label>
         <h1>
@@ -1002,7 +1002,7 @@ function GuidesPage() {
 }
 function GuidePage({ guide }: { guide: Guide }) {
   return (
-    <main className="light-page article-page">
+    <main className="editorial-page article-page">
       <div className="breadcrumbs">
         <Link to="/guides/">Guides</Link>
         <span>/</span>
@@ -1298,7 +1298,7 @@ function ClearDeviceData() {
 function InfoPage({ path }: { path: string }) {
   if (path === "/sources/")
     return (
-      <main className="light-page info-page">
+      <main className="editorial-page info-page">
         <Label>Checked October 5, 2026</Label>
         <h1>Sources & methods.</h1>
         <p className="article-intro">
@@ -1357,7 +1357,7 @@ function InfoPage({ path }: { path: string }) {
     );
   if (path === "/privacy/")
     return (
-      <main className="light-page info-page">
+      <main className="editorial-page info-page">
         <Label>Last updated October 5, 2026</Label>
         <h1>Your story stays with you.</h1>
         <p className="article-intro">
@@ -1433,7 +1433,7 @@ function InfoPage({ path }: { path: string }) {
     );
   if (path === "/contact/")
     return (
-      <main className="light-page info-page">
+      <main className="editorial-page info-page">
         <Label>Help keep the guide useful</Label>
         <h1>
           A correction starts
@@ -1459,7 +1459,7 @@ function InfoPage({ path }: { path: string }) {
     );
   if (path === "/about/")
     return (
-      <main className="light-page info-page">
+      <main className="editorial-page info-page">
         <Label>A fan story, thoughtfully made</Label>
         <h1>
           A little courage.
