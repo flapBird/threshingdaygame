@@ -4101,3 +4101,165 @@ details p {
 .bond-panel .result-copy > h2:focus {
   outline: none;
 }
+
+/* Search entry pages share the compact petrol editorial layout. */
+.discovery-page {
+  padding-inline: max(24px, calc((100vw - 960px) / 2));
+}
+.discovery-page h1 {
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.1;
+}
+.discovery-page a:not(.button) {
+  color: var(--gold);
+}
+.discovery-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin: 28px 0;
+  font-size: 13px;
+}
+.discovery-links a {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.quiz-landing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 44px;
+  align-items: center;
+  margin-bottom: 48px;
+}
+.quiz-landing-hero h1 {
+  margin: 14px 0 20px;
+}
+.quiz-landing-hero img {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+  border: 1px solid var(--dark-line);
+  border-radius: 8px;
+}
+.quiz-landing-hero .button {
+  margin-top: 24px;
+}
+.quiz-promise {
+  font-size: 12px;
+  margin: 14px 0;
+  color: var(--gold);
+}
+.quiz-landing-hero .fan-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+.quiz-landing > section {
+  margin-block: 32px;
+}
+.quiz-landing > section h2 {
+  font-size: 28px;
+  margin: 24px 0 12px;
+}
+.quiz-landing > section p {
+  color: var(--muted);
+  margin: 12px 0;
+  font-size: 15px;
+}
+.quiz-companions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+.quiz-companions a {
+  padding: 16px;
+  border: 1px solid var(--dark-line);
+  background: var(--surface-2);
+}
+.quiz-companions strong,
+.quiz-companions span {
+  display: block;
+}
+.quiz-companions strong {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 25px;
+}
+.quiz-companions span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: capitalize;
+}
+.bond-rarity {
+  margin: 16px 0 0;
+  padding: 12px;
+  border: 1px solid #c6a66b40;
+  background: #07191d;
+  border-radius: 6px;
+}
+.rarity-badge {
+  display: inline-block;
+  color: #d2ddd8;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.rarity-uncommon {
+  color: #afd2bd;
+}
+.rarity-rare {
+  color: #b6d4f1;
+}
+.rarity-epic {
+  color: #d5b8e9;
+}
+.rarity-legendary {
+  color: #f4d394;
+}
+.bond-rarity p,
+.bond-rarity summary {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+  margin-top: 5px;
+}
+.bond-rarity summary {
+  cursor: pointer;
+  color: var(--gold);
+}
+.bond-rarity a {
+  color: var(--gold);
+  text-decoration: underline;
+}
+@media (max-width: 650px) {
+  .quiz-landing-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .quiz-landing-hero img {
+    height: 240px;
+    object-position: 50% 28%;
+  }
+  .quiz-companions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.bond-rarity details {
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.bond-rarity summary {
+  padding: 0;
+}
+.share-fallback {
+  margin-top: 12px;
+}
+.share-fallback p {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}

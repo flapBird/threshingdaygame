@@ -6,6 +6,18 @@ import {
   RemovePublicBonds,
 } from "./CommunityUI";
 import React, { useEffect, useRef, useState } from "react";
+import {
+  BlackDragonPage,
+  FourthWingQuizPage,
+  DiscoveryLinks,
+} from "./DiscoveryPages";
+import {
+  getBondRarity,
+  parseSharedBond,
+  bondSharePath,
+  rarityTiers,
+  type BondRarity,
+} from "./rarity";
 import { HomeFAQ } from "./HomeFAQ";
 import { StoryScene } from "./StoryScene";
 import {
@@ -195,6 +207,7 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     [transitioning, setTransitioning] = useState(false),
     [storageOK, setStorageOK] = useState(true),
     [sharedDragon, setSharedDragon] = useState<Dragon | null>(null),
+    [sharedRanking, setSharedRanking] = useState<string[]>([]),
     [storyRun, setStoryRun] = useState(0),
     [started, setStarted] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -217,12 +230,11 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
       setStarted(saved.answers.length > 0);
     }
     const params = new URLSearchParams(window.location.search);
-    if (params.get("v") === String(RULE_VERSION)) {
-      const shared = dragons.find((d) => d.id === params.get("dragon"));
-      if (shared) {
-        setSharedDragon(shared);
-        setStarted(true);
-      }
+    const shared = parseSharedBond(params);
+    if (shared) {
+      setSharedDragon(shared.dragon);
+      setSharedRanking(shared.ranking);
+      setStarted(true);
     }
     setLoaded(true);
   }, []);
@@ -366,6 +378,7 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
           <BondResult
             earnedAnswers={sharedDragon ? null : answers}
             sharedDragon={sharedDragon}
+            sharedRanking={sharedRanking}
             onRestart={restart}
           />
         ) : !started ? (
@@ -604,11 +617,18 @@ function Homepage() {
           ))}
         </div>
       </section>
+      <div className="content-width">
+        <DiscoveryLinks />
+      </div>
       <HomeFAQ />
     </>
   );
 }
-async function downloadCard(dragon: Dragon, ranking: string[]) {
+async function downloadCard(
+  dragon: Dragon,
+  ranking: string[],
+  rarity: BondRarity | null,
+) {
   await document.fonts.ready;
   const image = new Image();
   image.src = `/images/${dragon.id}.webp`;
@@ -625,7 +645,13 @@ async function downloadCard(dragon: Dragon, ranking: string[]) {
   ctx.fillRect(0, 970, 1080, 380);
   ctx.fillStyle = "#d4b780";
   ctx.font = "22px Inter";
-  ctx.fillText("YOUR ORIGINAL FAN COMPANION", 64, 1023);
+  ctx.fillText(
+    rarity
+      ? `${rarity.tier} ${dragon.color} Dragon`.toUpperCase()
+      : "YOUR ORIGINAL FAN COMPANION",
+    64,
+    1023,
+  );
   ctx.fillStyle = "#f3eee4";
   ctx.font = '88px "Cormorant Garamond"';
   ctx.fillText(dragon.name, 60, 1121);
@@ -638,6 +664,14 @@ async function downloadCard(dragon: Dragon, ranking: string[]) {
     64,
     1228,
   );
+  if (rarity) {
+    ctx.font = "18px Inter";
+    ctx.fillText(
+      `Bond rarity · ${rarity.percent}% of answer paths share this trait pair`,
+      64,
+      1260,
+    );
+  }
   ctx.fillStyle = "#d4b780";
   ctx.font = "20px Inter";
   ctx.fillText("THRESHING DAY GAME", 64, 1293);
@@ -659,17 +693,21 @@ async function downloadCard(dragon: Dragon, ranking: string[]) {
 function BondResult({
   earnedAnswers,
   sharedDragon,
+  sharedRanking,
   onRestart,
 }: {
   earnedAnswers: number[] | null;
   sharedDragon: Dragon | null;
+  sharedRanking: string[];
   onRestart: () => void;
 }) {
   const result = earnedAnswers ? getResult(earnedAnswers) : null;
   const dragon = result?.dragon ?? sharedDragon!;
-  const ranking = result?.ranking.slice(0, 2) ?? [dragon.trait];
+  const ranking = result?.ranking.slice(0, 2) ?? sharedRanking;
+  const rarity = getBondRarity(ranking);
   const [saved, setSaved] = useState(false),
     [busy, setBusy] = useState(false),
+    [shareOpen, setShareOpen] = useState(false),
     [message, setMessage] = useState("");
   const [imageReady, setImageReady] = useState(false);
   const [revealed, setRevealed] = useState(false);
@@ -713,7 +751,7 @@ function BondResult({
     setBusy(true);
     setMessage("");
     try {
-      setExported(await downloadCard(dragon, ranking));
+      setExported(await downloadCard(dragon, ranking, rarity));
       setMessage("Your dragon card is ready to save.");
     } catch {
       setMessage(
@@ -723,13 +761,29 @@ function BondResult({
       setBusy(false);
     }
   };
-  const share = async () => {
-    const url = `${window.location.origin}/?dragon=${dragon.id}&v=${RULE_VERSION}#play-card`;
+  const share = async (copyOnly = false) => {
+    setShareOpen(true);
+    setMessage("");
+    const url = `${window.location.origin}${bondSharePath(dragon.id, ranking)}`;
+    const text = rarity
+      ? `${dragon.name} chose me — ${rarity.tier} ${dragon.color} Dragon. ${rarity.percent}% of answer paths share my ${ranking.join(" + ")} trait pair. Which dragon would choose you?`
+      : `${dragon.name} chose me. Which dragon would choose you?`;
+    if (!copyOnly && navigator.share) {
+      try {
+        await navigator.share({ title: "Threshing Day Game", text, url });
+        setMessage("Your dragon is ready for another rider to discover.");
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+      }
+    }
     try {
-      await navigator.clipboard.writeText(url);
-      setMessage("Result link copied. Your story is ready to share.");
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      setMessage(
+        "Result and link copied. Invite a friend to find their dragon.",
+      );
     } catch {
-      setMessage(`Copy this result link: ${url}`);
+      setMessage(`Copy your result: ${text} ${url}`);
     }
   };
   const bookmark = () => {
@@ -774,7 +828,11 @@ function BondResult({
           height="1000"
         />
         <div className="dragon-card-caption">
-          <Label>Your original fan companion</Label>
+          <Label>
+            {rarity
+              ? `${rarity.tier} ${dragon.color} Dragon`
+              : "Your original fan companion"}
+          </Label>
           <h2>{dragon.name}</h2>
           <p>{dragon.title}</p>
           <span>
@@ -799,6 +857,27 @@ function BondResult({
             <span key={t}>{t}</span>
           ))}
         </div>
+        {rarity && (
+          <div className="bond-rarity">
+            <span
+              className={`rarity-badge rarity-${rarity.tier.toLowerCase()}`}
+            >
+              {rarity.tier} bond
+            </span>
+            <p>{rarity.percent}% of all answer paths share this trait pair.</p>
+            <details>
+              <summary>How rare is this bond?</summary>
+              <p>
+                {rarity.paths.toLocaleString("en-US")} of{" "}
+                {rarity.total.toLocaleString("en-US")} possible paths lead to{" "}
+                {ranking.join(" + ")}, in that order. Each path counts equally.
+                This describes our fan quiz’s answer combinations, not real
+                riders or official Dragonkind odds.{" "}
+                <Link to="/sources/#bond-rarity">See all tiers.</Link>
+              </p>
+            </details>
+          </div>
+        )}
         <blockquote>“{dragon.oath}”</blockquote>
         <div className="bond-primary-actions">
           <button
@@ -808,13 +887,21 @@ function BondResult({
           >
             {busy ? "Saving…" : "Save card"}
           </button>
-          <button className="button secondary" onClick={share}>
+          <button className="button secondary" onClick={() => share()}>
             Share
           </button>
           <button className="button secondary" onClick={onRestart}>
             Go again
           </button>
         </div>
+        {shareOpen && (
+          <div className="share-fallback">
+            <button className="text-button" onClick={() => share(true)}>
+              Copy result & link
+            </button>
+            <p>Invite a friend to discover their dragon.</p>
+          </div>
+        )}
         <p className="action-message" role="status">
           {message}
         </p>
@@ -1020,6 +1107,7 @@ function GuidesPage() {
           </Link>
         ))}
       </div>
+      <DiscoveryLinks />
       <div className="source-note">
         <BookOpen size={22} />
         <p>
@@ -1085,6 +1173,7 @@ function GuidePage({ guide }: { guide: Guide }) {
             ),
           )}
           {guide.slug === "retry-cooldown" && <Reminder />}
+          {guide.slug === "black-blue-dragons" && <DiscoveryLinks />}
           <div className="article-next">
             <Label>Your story is waiting</Label>
             <h3>Try an original fan adventure.</h3>
@@ -1375,6 +1464,33 @@ function InfoPage({ path }: { path: string }) {
           order, so the same answers under the same rules give the same result.
           This is entertainment, not a personality assessment.
         </p>
+        <h2 id="bond-rarity">How bond rarity works</h2>
+        <p>
+          We enumerate all 6,561 possible eight-choice paths under matching
+          rules v1. Each path counts once. We group results by their two leading
+          traits, in order, using the same fixed tie-break as the trial. The
+          group’s share of all paths determines bond rarity v1:
+        </p>
+        <ul>
+          {rarityTiers.map((tier, index) => (
+            <li key={tier.name}>
+              <strong>{tier.name}</strong>:{" "}
+              {index === 0
+                ? "up to"
+                : `above ${rarityTiers[index - 1].maxPercent}% and up to`}{" "}
+              {tier.maxPercent}% of paths.
+            </li>
+          ))}
+        </ul>
+        <p>
+          These are theoretical answer-path frequencies, not measured player
+          percentages or random drop rates. Players may prefer some answers.
+          Rarity belongs to a trait combination, not a dragon color; it does not
+          change your strength score or official bond. Percentages are rounded
+          to two decimals, while tier boundaries use exact counts. Shared links
+          describe a possible result; they are not proof of a completed or
+          published run.
+        </p>
         <h2>Corrections</h2>
         <p>
           Sources are checked when content is reviewed. We do not have a live
@@ -1437,9 +1553,11 @@ function InfoPage({ path }: { path: string }) {
         <RemovePublicBonds />
         <h2>What a shared link contains</h2>
         <p>
-          A result link contains a companion ID and rules version. It does not
-          contain your answers, name, email or official Dragonkind information.
-          Anyone with the link can see that fan companion.
+          A result link contains a companion ID and rules version. New links
+          also include a secondary trait and rarity version to recreate the
+          trait pair and bond tier. It does not contain your eight answers,
+          name, email or official Dragonkind information. Anyone with the link
+          can see that fan result.
         </p>
         <h2>Website requests and external links</h2>
         <p>
@@ -1610,6 +1728,10 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
           <Homepage />
         ) : path === "/play/" ? (
           <Trial fullPage />
+        ) : path === "/dragonkind-black-dragon/" ? (
+          <BlackDragonPage />
+        ) : path === "/fourth-wing-dragon-quiz/" ? (
+          <FourthWingQuizPage />
         ) : path === "/leaderboard/" ? (
           <LeaderboardPage />
         ) : path === "/guides/" ? (

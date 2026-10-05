@@ -209,7 +209,7 @@ export const guides: Guide[] = [
         id: "our-trial",
         title: "How our own matching works",
         text: [
-          "Our original trial scores six traits: insight, loyalty, freedom, courage, resolve and curiosity. Your strongest trait selects one of six original companions. Every companion is reachable, and none is designated rarer than another.",
+          "Our original trial scores six traits: insight, loyalty, freedom, courage, resolve and curiosity. Your strongest trait selects one of six original companions. Every companion is reachable. A separate bond-rarity label describes how often your leading trait pair appears across all possible answer paths; it does not rank dragon colors or measure real players.",
           "Black and blue portraits in our atlas are fan artwork. Receiving one here does not influence your official game.",
         ],
       },
@@ -219,6 +219,8 @@ export const guides: Guide[] = [
 export const staticPaths = [
   "/",
   "/play/",
+  "/dragonkind-black-dragon/",
+  "/fourth-wing-dragon-quiz/",
   "/leaderboard/",
   "/guides/",
   ...guides.map((g) => `/guides/${g.slug}/`),
@@ -237,8 +239,16 @@ export function pageMeta(path: string) {
     };
   const pages: Record<string, [string, string]> = {
     "/": [
-      "Threshing Day Game — Play, Discover Your Dragon & Join the Rankings",
-      "Play Threshing Day Game free: eight choices, six original dragons, a shareable result card and rider rankings. Discover your bond with no account or cooldown.",
+      "Threshing Day Game — Free Dragon Bonding Game & Quiz",
+      "Play Threshing Day Game free: 8 choices, no signup, instant replay and a downloadable dragon card. Discover your original companion and bond rarity.",
+    ],
+    "/dragonkind-black-dragon/": [
+      "How to Get a Black Dragon in Dragonkind | Threshing Day Game",
+      "Can you get a black dragon in Dragonkind? Explore official confirmations, player reports, community theories, black vs blue dragons and retry advice—no guaranteed answers.",
+    ],
+    "/fourth-wing-dragon-quiz/": [
+      "Fourth Wing Dragon Quiz — Which Dragon Would Choose You?",
+      "Take a free Fourth Wing-inspired dragon quiz: 8 choices, six original fan companions, bond rarity and a downloadable dragon card. No signup. Replay instantly.",
     ],
     "/play/": [
       "Play the Original Fan Trial | Threshing Day Game",
