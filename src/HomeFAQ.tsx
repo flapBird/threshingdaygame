@@ -180,7 +180,7 @@ const groups: { title: string; questions: Question[] }[] = [
         answer:
           "Complete the trial to download your card, copy a result link or save your companion in this browser. To join the public wall, choose Publish my bond and enter a rider name. Wall counts include published bonds only, so an undiscovered or unpublished companion adds no public count. On the leaderboard, each dragon contributes your best strength, up to 600 points across six companions.",
         links: [
-          { href: "/dragon-wall/", label: "Visit the dragon wall" },
+          { href: "/#dragon-wall", label: "Visit the dragon wall" },
           { href: "/leaderboard/", label: "Ranking rules" },
         ],
       },
@@ -199,46 +199,56 @@ const groups: { title: string; questions: Question[] }[] = [
 export function HomeFAQ() {
   return (
     <section className="home-faq content-width" aria-labelledby="faq-title">
-      <h2 id="faq-title">Threshing Day game FAQ</h2>
-      <p className="faq-intro">
-        Dragon choices, retries and your result — here and in official
-        Dragonkind.
-      </p>
-      {groups.map((group) => (
-        <div className="faq-group" key={group.title}>
-          <h3>{group.title}</h3>
-          {group.questions.map(({ question, answer, links }) => (
-            <details key={question}>
-              <summary>
-                <span>{question}</span>
-                <Plus className="faq-plus" size={18} aria-hidden="true" />
-                <Minus className="faq-minus" size={18} aria-hidden="true" />
-              </summary>
-              <div className="faq-answer">
-                <p>{answer}</p>
-                {links && (
-                  <div className="faq-links">
-                    {links.map(({ href, label, source }) => (
-                      <a
-                        key={href}
-                        href={href}
-                        {...(source
-                          ? { target: "_blank", rel: "noopener noreferrer" }
-                          : {})}
-                      >
-                        {label}
-                        {source && (
-                          <ArrowUpRight size={14} aria-hidden="true" />
-                        )}
-                      </a>
-                    ))}
+      <div className="faq-heading">
+        <p className="eyebrow">FAQ</p>
+        <h2 id="faq-title">Threshing Day game FAQ</h2>
+        <p className="faq-intro">
+          Dragon choices, retries and your result — here and in official
+          Dragonkind.
+        </p>
+      </div>
+      <div className="faq-content">
+        {groups.map((group, groupIndex) => (
+          <div className="faq-group" key={group.title}>
+            <h3>{group.title}</h3>
+            {group.questions.map(
+              ({ question, answer, links }, questionIndex) => (
+                <details
+                  key={question}
+                  open={groupIndex === 0 && questionIndex === 0}
+                >
+                  <summary>
+                    <span>{question}</span>
+                    <Plus className="faq-plus" size={18} aria-hidden="true" />
+                    <Minus className="faq-minus" size={18} aria-hidden="true" />
+                  </summary>
+                  <div className="faq-answer">
+                    <p>{answer}</p>
+                    {links && (
+                      <div className="faq-links">
+                        {links.map(({ href, label, source }) => (
+                          <a
+                            key={href}
+                            href={href}
+                            {...(source
+                              ? { target: "_blank", rel: "noopener noreferrer" }
+                              : {})}
+                          >
+                            {label}
+                            {source && (
+                              <ArrowUpRight size={14} aria-hidden="true" />
+                            )}
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </details>
-          ))}
-        </div>
-      ))}
+                </details>
+              ),
+            )}
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

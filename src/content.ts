@@ -221,7 +221,6 @@ export const staticPaths = [
   "/play/",
   "/result/",
   "/leaderboard/",
-  "/dragon-wall/",
   "/guides/",
   ...guides.map((g) => `/guides/${g.slug}/`),
   "/dragons/",
@@ -253,10 +252,6 @@ export function pageMeta(path: string) {
     "/leaderboard/": [
       "Rider Leaderboard | Threshing Day Game",
       "Discover six original dragons and climb daily or all-time rider rankings. Each companion counts your strongest published bond.",
-    ],
-    "/dragon-wall/": [
-      "Dragon Wall — Latest Rider Bonds | Threshing Day Game",
-      "Meet the latest dragon companions published by real riders. Explore six colors and share your own original fan bond.",
     ],
     "/guides/": [
       "Dragonkind Guides & Practical Help | Threshing Day Game",

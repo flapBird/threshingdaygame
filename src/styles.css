@@ -2249,11 +2249,31 @@ details p {
   font-size: 13px;
 }
 .home-faq {
-  max-width: 800px;
-  padding: 16px 0 70px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.45fr);
+  align-items: start;
+  gap: 80px;
+  padding: 50px 0 80px;
+  border-top: 1px solid var(--line);
+}
+.faq-heading {
+  position: sticky;
+  top: 30px;
+}
+.faq-heading .eyebrow {
+  margin-bottom: 18px;
+}
+.faq-content {
+  min-width: 0;
+}
+.faq-content .faq-group:first-child {
+  margin-top: 0;
+}
+.faq-group details:first-of-type {
+  border-top: 1px solid var(--line);
 }
 .home-faq h2 {
-  font-size: 36px;
+  font-size: 44px;
   font-weight: 500;
   margin-bottom: 10px;
 }
@@ -2527,7 +2547,7 @@ details p {
   gap: 24px;
   margin: 40px 0 22px;
 }
-.wall-heading h2,
+.wall-heading h3,
 .wall-feed-title {
   font-size: 30px;
   font-weight: 500;
@@ -2605,50 +2625,6 @@ details p {
 }
 .wall-feed-title {
   margin: 42px 0 22px;
-}
-.bond-wall {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
-}
-.bond-wall article {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  overflow: hidden;
-}
-.bond-wall article > img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 4/4.3;
-  object-fit: cover;
-  object-position: 50% 25%;
-}
-.bond-wall article > div {
-  padding: 20px;
-}
-.bond-wall article span {
-  color: var(--gold);
-  font-size: 10px;
-}
-.bond-wall h2 {
-  font-size: 32px;
-  margin: 7px 0;
-}
-.bond-wall article p {
-  color: var(--muted);
-  font-size: 11px;
-  overflow-wrap: anywhere;
-}
-.bond-wall strong {
-  font-weight: 500;
-  color: var(--ivory);
-}
-.bond-wall time {
-  display: block;
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 12px;
 }
 .wall-note {
   margin-top: 32px;
@@ -2774,9 +2750,6 @@ details p {
   }
   .home-explainer {
     gap: 55px;
-  }
-  .bond-wall {
-    grid-template-columns: repeat(3, 1fr);
   }
 }
 @media (max-width: 900px) {
@@ -2911,9 +2884,6 @@ details p {
   }
   .ranking-rules > div {
     gap: 24px;
-  }
-  .bond-wall {
-    grid-template-columns: repeat(2, 1fr);
   }
   .wall-companions {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3215,21 +3185,6 @@ details p {
     font-size: 13px;
     padding: 10px 0;
   }
-  .bond-wall {
-    gap: 15px;
-  }
-  .bond-wall article > div {
-    padding: 14px;
-  }
-  .bond-wall h2 {
-    font-size: 29px;
-  }
-  .bond-wall article p {
-    font-size: 10px;
-  }
-  .bond-wall article span {
-    font-size: 9px;
-  }
   .publish-bond {
     padding: 20px;
   }
@@ -3352,5 +3307,200 @@ details p {
 @media (max-width: 360px) {
   .landing-copy h1 {
     font-size: 46px;
+  }
+}
+
+/* Homepage community module */
+.home-wall {
+  padding: 58px 0 52px;
+  scroll-margin-top: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.wall-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+.wall-intro > div {
+  max-width: 640px;
+}
+.wall-intro h2 {
+  font-size: 44px;
+  font-weight: 500;
+  margin: 10px 0;
+}
+.wall-intro > div > p:last-child {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+.wall-intro > a {
+  flex-shrink: 0;
+}
+.wall-community-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr);
+  gap: 24px;
+  margin-top: 28px;
+  align-items: start;
+}
+.wall-distribution,
+.wall-latest {
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  min-width: 0;
+}
+.wall-distribution h3,
+.wall-latest h3 {
+  font-size: 28px;
+  font-weight: 500;
+  margin: 0 0 14px;
+}
+.wall-distribution p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.wall-color-bars {
+  margin: 24px 0;
+}
+.wall-color-row {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  margin: 18px 0;
+}
+.wall-color-row > span:last-child {
+  text-align: right;
+  color: var(--muted);
+}
+.wall-color-track {
+  height: 8px;
+  border-radius: 8px;
+  background: #081a1d;
+  overflow: hidden;
+}
+.wall-color-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+.wall-color-note {
+  margin-bottom: 18px;
+}
+.wall-distribution > a {
+  font-size: 12px;
+}
+.home-bond-feed {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 22px;
+}
+.home-bond-feed article {
+  display: flex;
+  gap: 14px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+}
+.home-bond-feed article > img {
+  width: 52px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+.home-bond-feed article > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.home-bond-feed article span {
+  color: var(--gold);
+  font-size: 10px;
+}
+.home-bond-feed h4 {
+  font-size: 25px;
+  font-weight: 500;
+  margin: 4px 0;
+}
+.home-bond-feed p,
+.home-bond-feed time {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.home-bond-feed strong {
+  color: var(--ivory);
+  font-weight: 500;
+}
+.home-bond-feed time {
+  font-size: 10px;
+}
+.wall-latest .community-empty {
+  padding: 35px 12px;
+  margin: 0;
+  border: 0;
+  background: none;
+}
+.wall-latest .community-empty h4 {
+  font-size: 29px;
+  font-weight: 500;
+}
+.wall-more {
+  margin-top: 20px;
+}
+@media (max-width: 900px) {
+  .home-faq {
+    gap: 36px;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.3fr);
+  }
+  .home-faq h2 {
+    font-size: 36px;
+  }
+  .wall-community-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  }
+  .home-bond-feed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .wall-distribution,
+  .wall-latest {
+    padding: 22px;
+  }
+}
+@media (max-width: 600px) {
+  .home-faq {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding-top: 32px;
+  }
+  .faq-heading {
+    position: static;
+  }
+  .home-faq h2 {
+    font-size: 34px;
+  }
+  .home-wall {
+    padding: 40px 0;
+  }
+  .wall-intro {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+  .wall-intro h2 {
+    font-size: 36px;
+  }
+  .wall-community-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .wall-distribution,
+  .wall-latest {
+    padding: 20px;
   }
 }

@@ -1,7 +1,7 @@
 import {
   HomePodium,
   LeaderboardPage,
-  DragonWallPage,
+  HomeDragonWall,
   PublishBond,
   RemovePublicBonds,
 } from "./CommunityUI";
@@ -58,10 +58,12 @@ function Link({
   to,
   children,
   className = "",
+  onNavigate,
 }: {
   to: string;
   children: React.ReactNode;
   className?: string;
+  onNavigate?: () => void;
 }) {
   return (
     <a
@@ -72,6 +74,7 @@ function Link({
           return;
         e.preventDefault();
         navigate(to);
+        onNavigate?.();
       }}
     >
       {children}
@@ -127,7 +130,7 @@ function Header({ path }: { path: string }) {
       >
         {[
           ["/", "Play"],
-          ["/dragon-wall/", "Dragon Wall"],
+          ["/#dragon-wall", "Dragon Wall"],
           ["/leaderboard/", "Leaderboard"],
           ["/guides/retry-cooldown/", "Retry Timer"],
           ["/dragons/", "Dragon Atlas"],
@@ -136,6 +139,7 @@ function Header({ path }: { path: string }) {
           <Link
             key={to}
             to={to}
+            onNavigate={() => setOpen(false)}
             className={
               path === to || (to === "/" && path === "/play/") ? "active" : ""
             }
@@ -291,7 +295,7 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
             <span>Keep your next official attempt in view.</span>
             <ArrowUpRight size={16} />
           </Link>
-          <Link to="/dragon-wall/">
+          <Link to="/#dragon-wall">
             <BookmarkSimple size={21} />
             <strong>The dragon wall</strong>
             <span>Meet the newest bonds from the valley.</span>
@@ -540,6 +544,7 @@ function Homepage() {
           </ol>
         </div>
       </section>
+      <HomeDragonWall />
       <section className="home-guides content-width">
         <div className="section-heading">
           <div>
@@ -1529,6 +1534,7 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
         );
       }
     };
+    if (window.location.hash) update();
     window.addEventListener("site:navigate", update);
     window.addEventListener("popstate", update);
     return () => {
@@ -1577,8 +1583,6 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
           <ResultPage />
         ) : path === "/leaderboard/" ? (
           <LeaderboardPage />
-        ) : path === "/dragon-wall/" ? (
-          <DragonWallPage />
         ) : path === "/guides/" ? (
           <GuidesPage />
         ) : guide ? (

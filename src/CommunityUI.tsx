@@ -254,20 +254,30 @@ export function LeaderboardPage() {
     </main>
   );
 }
-export function DragonWallPage() {
+export function HomeDragonWall() {
   const { data, error, loading, refresh } = useCommunity("all");
   const [filter, setFilter] = useState("all");
+  const [expanded, setExpanded] = useState(false);
   const bonds =
     data?.recent.filter((b) => filter === "all" || b.dragonId === filter) || [];
   return (
-    <main className="community-page content-width">
-      <div className="community-intro">
-        <p className="eyebrow">Together in the valley</p>
-        <h1>The dragon wall.</h1>
-        <p>
-          Real bonds, shared by their riders. Explore the newest companions
-          discovered in our original Threshing Day Game.
-        </p>
+    <section
+      id="dragon-wall"
+      className="home-wall content-width"
+      aria-labelledby="wall-title"
+    >
+      <div className="wall-intro">
+        <div>
+          <p className="eyebrow">Together in the valley</p>
+          <h2 id="wall-title">The dragon wall</h2>
+          <p>
+            Real bonds, shared by their riders. Explore the newest companions
+            discovered in our original Threshing Day Game.
+          </p>
+        </div>
+        <a className="text-link" href="/leaderboard/">
+          View leaderboard <ArrowRight size={18} />
+        </a>
       </div>
       <div className="wall-stats">
         <div>
@@ -288,7 +298,7 @@ export function DragonWallPage() {
       </div>
       <div className="wall-heading">
         <div>
-          <h2>Six dragons. Your story.</h2>
+          <h3>Six dragons. Your story.</h3>
           <p>
             Choose a companion to filter the newest bonds. Counts include all
             published bonds of that color.
@@ -297,7 +307,10 @@ export function DragonWallPage() {
         <button
           className="wall-all-filter"
           aria-pressed={filter === "all"}
-          onClick={() => setFilter("all")}
+          onClick={() => {
+            setFilter("all");
+            setExpanded(false);
+          }}
         >
           All dragons
         </button>
@@ -315,13 +328,17 @@ export function DragonWallPage() {
             <button
               key={d.id}
               aria-pressed={filter === d.id}
-              onClick={() => setFilter(d.id)}
+              onClick={() => {
+                setFilter(d.id);
+                setExpanded(false);
+              }}
             >
               <img
                 src={`/images/${d.id}.webp`}
                 alt=""
                 width="800"
                 height="1000"
+                loading="lazy"
               />
               <span className="wall-companion-copy">
                 <span className="wall-companion-color">
@@ -340,68 +357,129 @@ export function DragonWallPage() {
           );
         })}
       </div>
-      <h2 className="wall-feed-title">
-        {filter === "all"
-          ? "Latest shared bonds"
-          : `Latest ${dragons.find((d) => d.id === filter)?.color.toLowerCase()} dragon bonds`}
-      </h2>
-      <CommunityStatus error={error} loading={loading} retry={refresh} />
-      {data &&
-        (bonds.length ? (
-          <div className="bond-wall">
-            {bonds.map((b) => {
-              const d = dragons.find((d) => d.id === b.dragonId)!;
+      <div className="wall-community-grid">
+        <aside
+          className="wall-distribution"
+          aria-labelledby="wall-colors-title"
+        >
+          <h3 id="wall-colors-title">Dragon colors</h3>
+          <p>A glimpse of the bonds shared in our valley.</p>
+          <div className="wall-color-bars">
+            {dragons.map((dragon) => {
+              const count =
+                data?.colors.find((color) => color.dragonId === dragon.id)
+                  ?.count ?? 0;
+              const share =
+                data && data.bonds > 0 ? (count / data.bonds) * 100 : 0;
               return (
-                <article key={b.id}>
-                  <img
-                    src={`/images/${d.id}.webp`}
-                    alt={`${d.name}, our original ${d.color.toLowerCase()} dragon`}
-                    width="800"
-                    height="1000"
-                    loading="lazy"
-                  />
-                  <div>
-                    <span>
-                      {d.color} · {b.strength}% bond
-                    </span>
-                    <h2>{d.name}</h2>
-                    <p>
-                      Bonded with <strong>{b.name}</strong>
-                    </p>
-                    <time dateTime={new Date(b.createdAt).toISOString()}>
-                      {new Date(b.createdAt).toLocaleDateString("en-GB", {
-                        month: "short",
-                        day: "numeric",
-                        timeZone: "UTC",
-                      })}
-                    </time>
-                  </div>
-                </article>
+                <div className="wall-color-row" key={dragon.id}>
+                  <span>{dragon.color}</span>
+                  <span className="wall-color-track" aria-hidden="true">
+                    <span
+                      style={{
+                        width: `${share}%`,
+                        backgroundColor: (
+                          {
+                            Black: "#827a96",
+                            Blue: "#579bc7",
+                            Brown: "#ae8058",
+                            Green: "#629c7c",
+                            Red: "#c76558",
+                            Orange: "#d89a56",
+                          } as Record<string, string>
+                        )[dragon.color],
+                      }}
+                    />
+                  </span>
+                  <span>{data ? `${Math.round(share)}%` : "—"}</span>
+                </div>
               );
             })}
           </div>
-        ) : (
-          <div className="community-empty">
-            <h2>
-              {filter === "all"
-                ? "The valley is waiting for its first rider."
-                : "No recent bonds of this color yet."}
-            </h2>
-            <p>
-              {data.bonds === 0
-                ? "All six companions are ready to discover. Complete a trial and choose Publish my bond to add your story here."
-                : "The wall shows the latest 24 published bonds across all colors. Try All dragons to see the newest stories, or publish your own."}
-            </p>
-            <a href="/play/" className="text-link">
-              Enter the valley <ArrowRight size={18} />
-            </a>
-          </div>
-        ))}
+          <p className="wall-color-note">
+            {data?.bonds === 0
+              ? "No published bonds yet. Every color is waiting for its first story."
+              : "Shares reflect published bonds, not your odds of meeting a dragon."}
+          </p>
+          <a href="/dragons/" className="text-link">
+            Explore the dragon atlas <ArrowRight size={16} />
+          </a>
+        </aside>
+        <div className="wall-latest">
+          <h3 className="wall-feed-title">
+            {filter === "all"
+              ? "Latest shared bonds"
+              : `Latest ${dragons.find((d) => d.id === filter)?.color.toLowerCase()} dragon bonds`}
+          </h3>
+          <CommunityStatus error={error} loading={loading} retry={refresh} />
+          {data &&
+            (bonds.length ? (
+              <div className="home-bond-feed">
+                {(expanded ? bonds : bonds.slice(0, 6)).map((b) => {
+                  const d = dragons.find((d) => d.id === b.dragonId)!;
+                  return (
+                    <article key={b.id}>
+                      <img
+                        src={`/images/${d.id}.webp`}
+                        alt={`${d.name}, our original ${d.color.toLowerCase()} dragon`}
+                        width="800"
+                        height="1000"
+                        loading="lazy"
+                      />
+                      <div>
+                        <span>
+                          {d.color} · {b.strength}% bond
+                        </span>
+                        <h4>{d.name}</h4>
+                        <p>
+                          Bonded with <strong>{b.name}</strong>
+                        </p>
+                        <time dateTime={new Date(b.createdAt).toISOString()}>
+                          {new Date(b.createdAt).toLocaleDateString("en-GB", {
+                            month: "short",
+                            day: "numeric",
+                            timeZone: "UTC",
+                          })}
+                        </time>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="community-empty">
+                <h4>
+                  {filter === "all"
+                    ? "The valley is waiting for its first rider."
+                    : "No recent bonds of this color yet."}
+                </h4>
+                <p>
+                  {data.bonds === 0
+                    ? "All six companions are ready to discover. Complete a trial and choose Publish my bond to add your story here."
+                    : "The wall shows the latest 24 published bonds across all colors. Try All dragons to see the newest stories, or publish your own."}
+                </p>
+                <a href="/play/" className="text-link">
+                  Enter the valley <ArrowRight size={18} />
+                </a>
+              </div>
+            ))}
+          {bonds.length > 6 && (
+            <button
+              className="text-button wall-more"
+              onClick={() => setExpanded(!expanded)}
+            >
+              {expanded
+                ? "Show fewer bonds"
+                : `Show all ${bonds.length} recent bonds`}
+            </button>
+          )}
+        </div>
+      </div>
       <p className="wall-note">
         New bonds appear here automatically. All dragon names, artwork and
         matching rules are original fan creations.
       </p>
-    </main>
+    </section>
   );
 }
 export function PublishBond({ answers }: { answers: number[] | null }) {
@@ -444,7 +522,7 @@ export function PublishBond({ answers }: { answers: number[] | null }) {
           <a href="/leaderboard/">
             See the rankings <ArrowRight size={16} />
           </a>
-          <a href="/dragon-wall/">Visit the dragon wall</a>
+          <a href="/#dragon-wall">Visit the dragon wall</a>
         </div>
       ) : (
         <form
