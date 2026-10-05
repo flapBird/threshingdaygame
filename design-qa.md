@@ -119,3 +119,32 @@ Comparison history: first combined review found no actionable P0/P1/P2 mismatch 
 Implementation checklist: illustrated cover and questions, segmented progress, scene/content entrances, choice feedback, next-art preload, responsive flow, reduced-motion fallback, original scoring and controls preserved.
 
 final result: passed
+
+## Compact inline result and story pacing · 2026-10-05
+
+This entry supersedes the earlier story-card geometry/pacing approval.
+
+Source truth: user screenshots in `/var/folders/ll/zfhgnxpx1sl87rndkww8r32w0000gq/T/`: `codex-clipboard-7072bd8b-bcc4-4f7d-853c-db5c86bfe302.png` identifies our left-column drift; `codex-clipboard-954affa4-1aa9-48b9-b6d7-a9437b424509.png` shows bottom-positioned typing; `codex-clipboard-301237d1-c459-45a3-a00d-3fae04e0200a.png` shows lifted narrative and choices; `codex-clipboard-e6184a3a-a42b-420b-9c87-93b22f574970.png` specifies the horizontal Save card / Share / Go again row.
+
+Findings and repairs:
+- [P1, resolved] Expanding the result vertically centered the left introduction. Desktop columns now align at their top independently; the left introduction stays at document y=104 for both play and result. Card right and navigation right both measure x=1273 at the final 1366px viewport. The text column ends at x=623, leaving a generous gap before the card at x=813.
+- [P1, resolved] Typing previously reserved options below the narrative without moving it. The narrative now starts lower by the measured decisions height (212px in the verified scene), types, transitions upward over 460ms, then reveals/enables options. Browser measurements changed narrative y=431.48 to y=219.48, with options hidden before and visible after.
+- [P2, resolved] The first measurement initially animated the narrative downward. Only the subsequent upward phase now has a transition; initial placement is immediate.
+- [P1, resolved] Result primary actions were stacked. Three equal grid columns now keep the exact labels Save card, Share and Go again on one line, also at 390px. The local collection control remains secondary.
+- [P2, resolved] Programmatic result-heading focus showed an unnecessary outline. The heading retains focus for accessibility without the outline; button focus styles remain intact.
+
+Evidence and normalization:
+- `qa/inline-result/cover-final.jpg`: 1366×768 CSS/pixels, opening card 460×482 at (813,104), entirely inside the first viewport.
+- `qa/inline-result/typing-final.jpg` and `choices-final.jpg`: 1366×768 CSS/pixels, the same fourth-scene typing and choices states.
+- `qa/inline-result/result-final.jpg`: 1366×1000 CSS/pixels, shared Pyrren result and three buttons, stable left introduction. The earned-result state was also tested, including its optional publishing disclosure; results may grow vertically while the left column stays anchored.
+- `qa/inline-result/mobile-result.jpg`: 390×844 CSS/pixels. All three primary buttons have identical y values, widths about 96px; document scroll width is 375px, with no horizontal overflow.
+- `qa/inline-result/motion-comparison.jpg`: actual source card crops (912×996 and 910×996) beside 460×482 implementation card crops, each fitted into a 420×480 region. Both typing and choices are visually compared in one image.
+- `qa/inline-result/result-comparison.jpg`: source result crop 910×1140 and implementation 460×696, each fitted into 420×660. Different original portraits and copy are intentional; the primary action row matches the reference's hierarchy.
+
+Required surfaces: original Cormorant/Inter typography, petrol/ivory/gold tokens, original bridge/dragon artwork, readable compact text and eight-choice story remain. Source orange buttons, rarity/traffic percentages, official signet claims and additional story routes are intentionally not copied. Illustrations remain sharp, with dark backing for text; no placeholders. The opening game is compact; long result content grows naturally. The combined focused comparisons show no remaining actionable P0/P1/P2 issue within this adaptation scope.
+
+Functional verification: all eight choices complete without leaving `/`; dragon image arrives while result copy is hidden, followed by result copy/actions. Narrative choices are inert/hidden while typing, with Show choices available. Back, saved progress, skip, replay, card PNG generation success, share success feedback and a valid `/?dragon=pyrren&v=1#play-card` link were exercised. `/result/` renders the not-found UI and no longer exists in the static build. The browser clipboard read API did not expose copied text, so share feedback and direct link loading were checked separately. OS-level downloaded-file placement was not inspected. No public bond was posted. Reduced-motion handling was code-reviewed; OS preferences were not changed.
+
+Validation: production build, 11 unit tests (including retired route regression) and 4 Sites packaging tests pass. Protected Sites worker/packaging files remain unchanged. Preview service was restarted after its existing process stopped; the local Vite community API remains unavailable and shows its existing honest error state.
+
+final result: passed

@@ -4067,9 +4067,10 @@ details p {
 /* Narrative starts at the foot of the frame, lifts, then makes room for choices. */
 .story-narrative {
   transform: translateY(var(--decisions-height));
-  transition: transform 460ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: none;
 }
 .narrative-lifted .story-narrative {
+  transition: transform 460ms cubic-bezier(0.22, 0.61, 0.36, 1);
   transform: translateY(0);
 }
 .bond-primary-actions {
@@ -4091,7 +4092,12 @@ details p {
   background: transparent;
 }
 @media (prefers-reduced-motion: reduce) {
-  .story-narrative {
+  .story-narrative,
+  .narrative-lifted .story-narrative {
     transition: none;
   }
+}
+
+.bond-panel .result-copy > h2:focus {
+  outline: none;
 }
