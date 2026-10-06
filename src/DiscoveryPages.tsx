@@ -213,10 +213,11 @@ export function FourthWingQuizPage() {
         <h2>Your choices shape the bond.</h2>
         <p>
           This is a story quiz, so you do not need to remember book trivia.
-          Follow a misty bridge, a lantern and a waiting dragon. Each decision
-          explores insight, loyalty, freedom, courage, resolve or curiosity.
-          Your leading trait chooses your companion; your two leading traits
-          determine your bond-rarity label.
+          Choose the sunken way, lantern grove or windward ridge. Discover
+          different encounters and see your earlier decisions shape later
+          scenes. Each decision explores insight, loyalty, freedom, courage,
+          resolve or curiosity. Your leading trait chooses your companion; your
+          two leading traits determine your bond-rarity label.
         </p>
         <p>
           The quiz uses the same original eight-choice engine as Threshing Day

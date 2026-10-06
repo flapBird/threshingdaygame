@@ -4263,3 +4263,259 @@ details p {
   color: var(--muted);
   margin-top: 4px;
 }
+
+/* Exploration is part of the story, with a compact journal after the result. */
+.story-card .scene-consequence {
+  color: var(--gold);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 0 0 10px;
+  padding-left: 10px;
+  border-left: 2px solid #d4b78080;
+}
+.story-card .step-header > span {
+  font-size: 10px;
+}
+.route-preview {
+  display: grid;
+  grid-template-columns: 1fr 1.7fr;
+  gap: 40px;
+  padding-block: 36px;
+  border-top: 1px solid #d4b78026;
+  border-bottom: 1px solid #d4b78026;
+}
+.route-preview h2 {
+  font-size: 29px;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+.route-preview p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.route-preview .eyebrow {
+  color: var(--gold);
+  font-size: 10px;
+}
+.route-preview ol {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  padding: 0;
+  margin: 0;
+}
+.route-preview li > span {
+  display: block;
+  color: var(--gold);
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+.route-preview li strong {
+  color: var(--ivory);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 21px;
+  font-weight: 500;
+}
+.route-preview a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gold);
+  font-size: 12px;
+  min-height: 36px;
+}
+.journey-progress {
+  text-align: left;
+  margin: 20px 0;
+  border: 1px solid #d4b78040;
+  background: #081b20;
+  padding: 16px;
+  border-radius: 8px;
+}
+.journey-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.journey-heading h3 {
+  margin: 0;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 24px;
+  color: var(--ivory);
+}
+.journey-heading > span {
+  font-size: 10px;
+  color: #acbdbb;
+}
+.journey-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 12px 0;
+  color: #acbdbb;
+  font-size: 11px;
+}
+.journey-counts strong {
+  color: var(--gold);
+  font-weight: 500;
+}
+.discovery-companions {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 7px;
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+}
+.discovery-companions img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #d4b78030;
+}
+.discovery-companions .undiscovered img {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+.discovery-companions .discovered img {
+  border-color: var(--gold);
+}
+.discovery-companions span {
+  display: block;
+  font-size: 9px;
+  color: var(--ivory);
+  margin-top: 5px;
+  text-align: center;
+}
+.discovery-companions small {
+  display: block;
+  color: #acbdbb;
+  font-size: 8px;
+  text-align: center;
+}
+.journey-goal {
+  padding-top: 12px;
+  border-top: 1px solid #d4b78026;
+}
+.journey-goal strong {
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 500;
+}
+.journey-goal p,
+.journey-progress > p {
+  color: #acbdbb;
+  font-size: 12px;
+  line-height: 1.65;
+  margin: 6px 0 0;
+}
+.journey-progress .journey-unlocks {
+  color: var(--gold);
+  font-size: 11px;
+  margin: 0 0 12px;
+}
+.journey-trail {
+  margin-top: 14px;
+}
+.journey-trail summary {
+  color: var(--ivory);
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1.6;
+  padding: 7px 0;
+}
+.journey-trail ol {
+  list-style: none;
+  border-left: 1px solid #d4b78040;
+  padding: 0 0 0 13px;
+  margin: 12px 0 0;
+}
+.journey-trail li {
+  margin-bottom: 14px;
+}
+.journey-trail strong {
+  font-size: 12px;
+  color: var(--ivory);
+  font-weight: 500;
+}
+.journey-trail p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #acbdbb;
+}
+.journey-trail small {
+  color: var(--gold);
+  font-size: 10px;
+}
+.journey-return .discovery-companions {
+  display: none;
+}
+.shared-journey-note {
+  color: #acbdbb;
+  font-size: 12px;
+  line-height: 1.6;
+}
+@media (max-width: 900px) {
+  .route-preview {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .journey-return {
+    max-width: 530px;
+    margin-inline: auto;
+  }
+}
+@media (max-width: 600px) {
+  .route-preview {
+    padding-block: 24px;
+  }
+  .route-preview ol {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .route-preview li {
+    padding-left: 32px;
+    position: relative;
+  }
+  .route-preview li > span {
+    position: absolute;
+    left: 0;
+    top: 6px;
+  }
+  .route-preview li p {
+    margin: 4px 0;
+  }
+  .journey-progress {
+    padding: 12px;
+  }
+  .discovery-companions {
+    gap: 5px;
+  }
+  .journey-heading h3 {
+    font-size: 22px;
+  }
+  .journey-counts {
+    gap: 8px 10px;
+  }
+}
+
+.route-preview li > small {
+  display: block;
+  color: var(--gold);
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+.story-card .choice-route {
+  display: block;
+  margin-top: 3px;
+  color: #c3b28f;
+  font-size: 10px;
+  font-weight: 400;
+}

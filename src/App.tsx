@@ -20,6 +20,8 @@ import {
 } from "./rarity";
 import { HomeFAQ } from "./HomeFAQ";
 import { StoryScene } from "./StoryScene";
+import { adventureScene, JOURNAL_KEY, routes } from "./adventure";
+import { JourneyProgress } from "./JourneyProgress";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -58,7 +60,7 @@ import {
   writeDevice as write,
   removeDevice as remove,
 } from "./storage";
-const RUN_KEY = "threshingday:run:v1",
+const RUN_KEY = "threshingday:adventure-run:v1",
   COLLECTION_KEY = "threshingday:collection:v1",
   TIMER_KEY = "threshingday:reminder:v1";
 // Enable manually when the community is established; never seed placeholder riders.
@@ -187,18 +189,6 @@ function Footer() {
     </footer>
   );
 }
-// Existing original artwork supplies the changing mood of each story slide.
-const trialArtwork = [
-  ["crossing", "50% 38%"],
-  ["crossing", "85% 65%"],
-  ["brannoc", "50% 28%"],
-  ["vesper", "50% 25%"],
-  ["aureth", "50% 25%"],
-  ["solvane", "50% 28%"],
-  ["sylvara", "50% 25%"],
-  ["crossing", "65% 20%"],
-];
-
 function Trial({ fullPage = false }: { fullPage?: boolean }) {
   const [answers, setAnswers] = useState<number[]>([]),
     [step, setStep] = useState(0),
@@ -305,15 +295,15 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     setStarted(true);
     focus();
   };
-  const scene = scenes[step];
+  const scene = adventureScene(answers.slice(0, step));
   const completed = answers.length === scenes.length;
   const showingBond = completed || sharedDragon !== null;
   useEffect(() => {
     // Warm the next illustration without delaying a player's choice.
     if (!started || step >= scenes.length - 1) return;
     const nextImage = new Image();
-    nextImage.src = `/images/${trialArtwork[step + 1][0]}.webp`;
-  }, [started, step]);
+    nextImage.src = `/images/${adventureScene([...answers.slice(0, step), 0]).art}.webp`;
+  }, [started, step, answers]);
   return (
     <section
       className={`landing-hero content-width ${fullPage ? "dedicated-play" : ""}`}
@@ -326,9 +316,9 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
           <span>Game</span>
         </h1>
         <p className="landing-lead">
-          Make eight choices in an original dragon-bonding story. Discover your
-          companion, save your dragon card, and explore all six to climb the
-          riders’ leaderboard.
+          A sunken passage. A lantern-lit grove. A ridge above the clouds.
+          Choose your way through eight encounters, see the consequences, and
+          discover the dragon waiting at the end of your story.
         </p>
         <ul className="feature-pills" aria-label="Game features">
           <li>About 3 minutes</li>
@@ -355,6 +345,7 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
           <External href="https://dragonkind.com/">Open Dragonkind</External>
           <span>Our story is an independent fan experience.</span>
         </p>
+        {!started && <JourneyProgress key={storyRun} />}
       </div>
       <div
         className={`game-card story-card ${showingBond ? "showing-bond" : ""} ${started ? "game-started" : ""} ${transitioning ? "story-leaving" : ""}`}
@@ -365,9 +356,10 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
           <div className="story-backdrop" aria-hidden="true">
             <img
               key={started ? step : "cover"}
-              src={`/images/${started ? trialArtwork[step][0] : "crossing"}.webp`}
+              src={`/images/${started ? scene.art : "crossing"}.webp`}
               style={{
-                objectPosition: started ? trialArtwork[step][1] : "50% 38%",
+                objectPosition:
+                  scene.art === "crossing" ? "50% 38%" : "50% 28%",
               }}
               alt=""
               fetchPriority="high"
@@ -390,8 +382,8 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
                 is waiting.
               </h2>
               <p>
-                A silent bridge. An unfamiliar valley. Eight moments to discover
-                what you stand for.
+                Three ways into the valley. Every choice leaves a mark. Where
+                will your first step take you?
               </p>
               <button
                 className="button primary"
@@ -403,13 +395,15 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
               >
                 Enter the valley <ArrowRight size={20} />
               </button>
-              <span>8 choices · 6 original dragons</span>
+              <span>8 choices · 3 routes · 6 original dragons</span>
             </div>
           </div>
         ) : (
           <div className="trial-panel">
             <div className="step-header">
-              <span>{String(step + 1).padStart(2, "0")} / 08 </span>
+              <span>
+                {String(step + 1).padStart(2, "0")} / 08 · {scene.route}
+              </span>
               {step > 0 && (
                 <button
                   className="back-button"
@@ -440,7 +434,11 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
               ))}
             </div>
             <div className="story-slide" key={`${storyRun}-${step}`}>
-              <StoryScene scene={scene} titleRef={titleRef}>
+              <StoryScene
+                scene={scene}
+                titleRef={titleRef}
+                consequence={scene.consequence}
+              >
                 <div
                   className="choices"
                   role="group"
@@ -469,7 +467,14 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
                       <span className="choice-letter" aria-hidden="true">
                         {String.fromCharCode(65 + i)}
                       </span>
-                      <span>{option.text}</span>
+                      <span>
+                        {option.text}
+                        {step === 0 && (
+                          <small className="choice-route">
+                            {routes[i].name}
+                          </small>
+                        )}
+                      </span>
                       <span className="choice-check" aria-hidden="true">
                         {selected === i && <Check size={20} weight="bold" />}
                       </span>
@@ -505,6 +510,38 @@ function Homepage() {
       <Trial />
       {SHOW_HOME_PODIUM && <HomePodium />}
       <section
+        className="route-preview content-width"
+        aria-label="Three routes to discover"
+      >
+        <div>
+          <p className="eyebrow">One valley. Three ways through.</p>
+          <h2>Your next journey can be different.</h2>
+          <p>
+            Change your first choice to find a new route. The people you help
+            and the paths you notice change what happens next.
+          </p>
+        </div>
+        <ol>
+          {routes.map((route, index) => (
+            <li key={route.id}>
+              <span>0{index + 1}</span>
+              <strong>{route.name}</strong>
+              <p>
+                {
+                  [
+                    "Read the current. Uncover the lost crossing.",
+                    "Follow the bells. Decide who walks beside you.",
+                    "Climb into the wind. Find a way beyond the tower.",
+                  ][index]
+                }
+              </p>
+              <small>Begin with: “{route.hint}”</small>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <HomeDragonWall />
+      <section
         className="home-explainer content-width"
         aria-labelledby="what-title"
       >
@@ -519,8 +556,9 @@ function Homepage() {
             In Rebecca Yarros’s world, Threshing is the trial where would-be
             riders seek a dragon bond. Our Threshing Day Game is a free,
             browser-based fan adventure about finding your dragon companion.
-            Journey through a misty valley, make eight choices, and meet one of
-            six original dragons whose defining trait reflects your path.
+            Choose the sunken way, lantern grove or windward ridge. Your
+            decisions lead to different encounters, crossings and consequences
+            before you meet one of six original companions.
           </p>
           <p>
             Your strongest trait — insight, loyalty, freedom, courage, resolve
@@ -569,15 +607,15 @@ function Homepage() {
               ],
               [
                 "Make eight choices",
-                "Tap the path that feels right. Each choice continues the story; use Back to reconsider.",
+                "Choose a route and react to what you find. Later scenes remember your decisions; use Back to explore another way.",
               ],
               [
                 "Meet your dragon",
-                "Discover your companion, defining traits and oath. Download a card or copy your result link.",
+                "Reveal your companion and new discoveries. Save a card, share your result, and look back through your journey.",
               ],
               [
-                "Join the riders’ hall",
-                "Optionally publish your bond. Try new paths to discover all six dragons and build your score.",
+                "Find what you missed",
+                "Follow your next discovery hint to explore three routes, nine opening encounters and six companions. Publishing your bond is optional.",
               ],
             ].map(([title, text], i) => (
               <li key={title}>
@@ -589,7 +627,6 @@ function Homepage() {
           </ol>
         </div>
       </section>
-      <HomeDragonWall />
       <section className="home-guides content-width">
         <div className="section-heading">
           <div>
@@ -894,6 +931,13 @@ function BondResult({
             Go again
           </button>
         </div>
+        {earnedAnswers && <JourneyProgress answers={earnedAnswers} />}
+        {!earnedAnswers && (
+          <p className="shared-journey-note">
+            This is a shared companion. Play your own journey to discover routes
+            and fill your exploration journal.
+          </p>
+        )}
         {shareOpen && (
           <div className="share-fallback">
             <button className="text-button" onClick={() => share(true)}>
@@ -1376,8 +1420,8 @@ function ClearDeviceData() {
       {confirm ? (
         <>
           <p>
-            This removes your progress, saved companions and reminder from this
-            browser.
+            This removes your story progress, exploration journal, saved
+            companions and reminder from this browser.
           </p>
           <button
             className="button outline"
@@ -1385,6 +1429,8 @@ function ClearDeviceData() {
               const cleared = [
                 RUN_KEY,
                 COLLECTION_KEY,
+                JOURNAL_KEY,
+                "threshingday:run:v1",
                 TIMER_KEY,
                 "threshingday:run-id:v1",
                 "threshingday:published:v1",
@@ -1395,7 +1441,7 @@ function ClearDeviceData() {
               setConfirm(false);
               setMessage(
                 cleared
-                  ? "Your saved story, companions and reminder have been cleared."
+                  ? "Your saved story, exploration journal, companions and reminder have been cleared."
                   : "This browser could not clear persistent storage. Clear this site in your browser’s site-data settings.",
               );
             }}
@@ -1529,11 +1575,12 @@ function InfoPage({ path }: { path: string }) {
         </p>
         <h2>What is stored on this device</h2>
         <p>
-          Your eight choices and current question, saved companion IDs, and the
-          end time of a reminder use localStorage. Your answers are sent for
-          score verification only if you choose to publish a bond. The answers
-          themselves are not retained in the database. This storage does not
-          follow you to another browser or device.
+          Your eight choices and current question, completed journey paths,
+          saved companion IDs, and the end time of a reminder use localStorage.
+          Your exploration journal records discoveries on this device only. Your
+          answers are sent for score verification only if you choose to publish
+          a bond. The answers themselves are not retained in the database. This
+          storage does not follow you to another browser or device.
         </p>
         <h2>Optional public bonds</h2>
         <p>
@@ -1568,9 +1615,10 @@ function InfoPage({ path }: { path: string }) {
         </p>
         <h2>Clear your saved story</h2>
         <p>
-          Start a new trial to replace progress, remove companions from their
-          result cards, or clear a reminder on the retry page. You can also
-          remove all site storage using your browser’s site-data controls.
+          Start a new trial to replace the current story while keeping your
+          exploration journal. Remove companions from their result cards, or
+          clear a reminder on the retry page. You can also remove all site
+          storage using your browser’s site-data controls.
         </p>
         <ClearDeviceData />
         <h2>Feedback notes</h2>

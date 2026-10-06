@@ -14,10 +14,12 @@ export function StoryScene({
   scene,
   titleRef,
   children,
+  consequence,
 }: {
   scene: Scene;
   titleRef: Ref<HTMLHeadingElement>;
   children: ReactNode;
+  consequence?: string;
 }) {
   const [visible, setVisible] = useState(0);
   const [choicesReady, setChoicesReady] = useState(false);
@@ -75,6 +77,7 @@ export function StoryScene({
       style={{ "--decisions-height": `${decisionHeight}px` } as CSSProperties}
     >
       <div className="story-narrative">
+        {consequence && <p className="scene-consequence">{consequence}</p>}
         <h2 ref={titleRef} tabIndex={-1}>
           {scene.title}
         </h2>
