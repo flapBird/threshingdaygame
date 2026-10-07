@@ -225,6 +225,7 @@ export const staticPaths = [
   "/guides/",
   ...guides.map((g) => `/guides/${g.slug}/`),
   "/dragons/",
+  "/my-dragons/",
   ...["about", "sources", "privacy", "contact", "404"].map((p) => `/${p}/`),
 ];
 export function normalizePath(path: string) {
@@ -261,6 +262,10 @@ export function pageMeta(path: string) {
     "/guides/": [
       "Dragonkind Guides & Practical Help | Threshing Day Game",
       "Find the official game, troubleshoot email codes, understand retry waits, and separate dragon-bonding facts from theories.",
+    ],
+    "/my-dragons/": [
+      "My Dragons — Your Collection | Threshing Day Game",
+      "Your device-local dragon collection: six original companions, thirty bond combinations, milestones and your next discovery.",
     ],
     "/dragons/": [
       "Dragon Atlas — Six Original Companions | Threshing Day Game",

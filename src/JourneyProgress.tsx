@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { dragons } from "./trial";
+import { dragonCollection, JOURNAL_EVENT } from "./collection";
 import { readDevice, writeDevice } from "./storage";
 import {
   JOURNAL_KEY,
@@ -27,6 +28,11 @@ export function JourneyProgress({ answers }: { answers?: number[] }) {
         const before = journalProgress(stored),
           after = journalProgress(next);
         const notices = [];
+        if (
+          dragonCollection(JSON.stringify(next)).collected.length >
+          dragonCollection(JSON.stringify(stored)).collected.length
+        )
+          notices.push("New bond combination discovered");
         if (after.companions.length > before.companions.length)
           notices.push("New companion discovered");
         if (after.routes.length > before.routes.length)
@@ -39,6 +45,7 @@ export function JourneyProgress({ answers }: { answers?: number[] }) {
           notices.push("Dragonkeeper · All six companions");
         setUnlocks(notices);
         setPersistent(writeDevice(JOURNAL_KEY, JSON.stringify(next)));
+        window.dispatchEvent(new Event(JOURNAL_EVENT));
       }
     }
     setPaths(next);
@@ -94,6 +101,11 @@ export function JourneyProgress({ answers }: { answers?: number[] }) {
           );
         })}
       </ul>
+      <a href="/my-dragons/" className="journey-collection-link">
+        Open My Dragons ·{" "}
+        {dragonCollection(JSON.stringify(paths)).collected.length}/30 bonds{" "}
+        <span aria-hidden="true">→</span>
+      </a>
       <div className="journey-goal">
         <strong>{goal.title}</strong>
         <p>{goal.hint}</p>

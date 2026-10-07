@@ -139,7 +139,18 @@ export function HomePodium() {
           <span>New rankings every day at 00:00 UTC</span>
         </p>
       </div>
-      <Podium leaders={data?.leaders || []} />
+      {data && !error ? (
+        <Podium leaders={data.leaders} />
+      ) : (
+        <div className="podium-unavailable">
+          <Trophy size={30} aria-hidden="true" />
+          <p>
+            {loading
+              ? "Gathering today’s riders…"
+              : "The hall will return soon."}
+          </p>
+        </div>
+      )}
       <div className="podium-cta">
         <p>Discover. Collect. Climb.</p>
         <a className="button primary" href="/leaderboard/">

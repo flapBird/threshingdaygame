@@ -27,3 +27,8 @@ test("search entry pages are indexable routes alongside the existing guide", () 
     /8 choices, no signup, instant replay/,
   );
 });
+
+test("My Dragons has a dedicated route and metadata", () => {
+  assert.ok(staticPaths.includes("/my-dragons/"));
+  assert.match(pageMeta("/my-dragons/").title, /My Dragons/);
+});

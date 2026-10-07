@@ -1,3 +1,35 @@
+# Design QA · Collection and atmosphere · 2026-10-07
+
+**final result: passed**
+
+## Source and scope
+
+The six user-supplied October 7 screenshots are structural references for the restored podium, scenic surfaces, rider overview, collection matrix and illustrated cards. Retain the established petrol/gold identity and original art. This is an adaptation, not a pixel-for-pixel clone. The archived October 5 instruction to hide the podium is superseded by the current user request.
+
+Primary comparison sources: `/Users/admin/Desktop/截屏2026-10-07 15.41.36.png` (2526 × 1038, overview) and `/Users/admin/Desktop/截屏2026-10-07 15.41.44.png` (2670 × 1160, cards). Their CSS viewport/DPR is unknown. `qa/collection/comparison-overview.jpg` and `comparison-cards.jpg` proportionally resize references and corresponding implementation crops to a common maximum width; both were opened and visually inspected together. Intentional differences: three desktop portrait columns, original dragon art, six original companions with 30 leading/secondary trait combinations rather than invented new species or tails, and actual local discovery counts.
+
+## Visual and interaction evidence
+
+- Desktop collection: `qa/collection/desktop-empty.jpg` and `desktop-collected.jpg`, captured at 1440 × 1000 CSS viewport. Three actual eight-choice browser journeys earned Vesper, Pyrren and Solvane. Rider summary, matrix, milestone states, card hierarchy and atmospheric surfaces align with the requested structure.
+- Mobile collection: `qa/collection/mobile-collected.jpg`, 390 × 844 viewport. Document width is 390px; only the matrix scrolls horizontally (320px visible / 730px content). Sticky row labels and a swipe hint preserve context. Cards use two columns, and filters/menu remain usable.
+- Homepage: `qa/collection/home-desktop.jpg`, 1440 × 1000; `home-mobile.jpg`, 390 × 844 full-page capture. The podium follows the hero, using genuine local D1 values of zero public riders/bonds and clearly labeled empty seats. No public test rows were seeded. The document has no mobile horizontal overflow.
+- Typography/color: self-hosted Cormorant Garamond and Inter, ivory reading text, antique gold actions, dark translucent surfaces. Original scenery and gentle light gradients extend beyond the game card. Full-page screenshots can flatten the fixed background outside the capture viewport; ordinary scrolling retains the fixed scene.
+- Images: original compressed WebP portraits and crossing scene; no copied competitor artwork. Portrait focal points and text overlays remain legible at checked sizes.
+- Interactions: completed journeys update the navigation count; reload retains progress; locked cells reveal useful trait hints; color/rarity filters, clear filters and rarest-first ordering work; collection sharing copies an accurate summary; individual cards open validated versioned results. Opening an undiscovered shared Sylvara card did not increase the 3/30 collection or three journeys.
+- Motion: pause/resume tested and preference persists across navigation; resumed CSS animation reports running. Reduced-motion CSS disables the light animation and the component honors the system setting. System-level reduced-motion was not toggled in this run.
+
+## Iteration and checks
+
+A transient missing event import during implementation was fixed before the final build. A native gray secondary button was replaced with the dark/gold component style; the final comparison captures include that fix. Mobile matrix navigation gained sticky labels and a swipe hint. No actionable P0/P1/P2 findings remain in the checked scope.
+
+TypeScript, production build and 17-route prerender passed. All 22 unit tests, four Sites compatibility tests, and one Cloudflare/workerd/D1 integration test passed. Exhaustive collection tests cover all 6,561 paths, all 30 reachable pairs, deduplication, migration from the existing journal, and rejection of malformed/shared/bookmark data. Local HTTP checks verify `/my-dragons/` returns 200 with prerendered noindex, is omitted from the sitemap, and unknown routes return a true 404. The final production-preview tab reported no console errors or warnings. `git diff --check` passed.
+
+Only local previews and a Cloudflare dry-run were used. Remote deployment, production database behavior and OS-native sharing dialogs are outside this verification. The six existing illustrations are reused across trait combinations; expanding the cast with distinct new dragons would be a separate content and matching-rules change.
+
+---
+
+# Archived QA reports
+
 # Design QA · FAQ and launch refinements · 2026-10-05
 
 **final result: passed**
@@ -17,6 +49,7 @@
 1. **Baseline — P1 theme discontinuity / FAQ gaps / empty wall presentation.** Current-run `home-before-desktop.png` and `wall-before-desktop.png` captured the ivory How section, generic six-question FAQ, homepage podium and text-only empty wall. The user asked to change these.
 2. **First revision — P1 image sizing.** The new six dragon cards initially retained the HTML image height of 1000px; `wall-initial-sizing.png` records the problem. Adding explicit automatic CSS heights and a preferred aspect ratio restored compact cards. Final desktop images measure 183 × 173.84 CSS px rather than 183 × 1000. The same fix covers published wall images.
 3. **Post-fix comparison — passed.** Opened and inspected both source and rendered artifacts in the same comparison inputs: `comparison-home.png` (baseline left / revised right, 1280 × 1805), `comparison-how.png` (user reference above / dark revision below, 1280 × 785), `comparison-wall.png` (empty baseline left / six-companion revision right, 1280 × 768), and `comparison-wall-sizing.png` (initial sizing issue left / corrected right, 1280 × 1181). `how-desktop.png` and `how-320.png` are unaltered content crops from their full-page captures.
+
 - Rejected captures: offscreen keyboard activation initially left the screenshot at the hero, and full-page capture from a scrolled viewport included an offscreen fixed skip-link artifact. These were replaced by the accepted FAQ screenshot and fresh wall captures from scrollY = 0. They are not used as final evidence.
 
 ## Current five-surface assessment
@@ -101,11 +134,13 @@ Source: user attachments `codex-clipboard-51dc41fb-9b8f-4443-ade5-fb5f8bb61676.p
 Scope: adapt the reference's illustrated interactive slides to our original eight-choice story and existing petrol/gold design. This is not a pixel clone or a change to scoring. Existing dragon portraits provide atmospheric scene artwork; they do not announce the player's final companion.
 
 Evidence:
+
 - `qa/story-card/desktop.jpg`: homepage, first question, no selected answer; 1440 × 1000 CSS viewport, browser capture 1425 × 990 pixels.
 - `qa/story-card/mobile.jpg`: final question and all three choices; 390 × 844 CSS viewport. No horizontal overflow; panel grows for long text.
 - `qa/story-card/comparison.jpg`: source choice card (912 × 995 crop of the 1250 × 1076 attachment) beside our first-question card (519 × 612 CSS crop). Capture coordinates scaled by 1425/1440 and 990/1000; both cards fitted into 520 × 612 comparison regions. The source has four longer answers and a different story, so exact text wrapping and height are intentionally different. This combined focused comparison is readable enough to inspect all controls; the desktop capture supplies surrounding layout context.
 
 Required surfaces reviewed:
+
 - Typography: original Cormorant headings and Inter body retained; compact 32px desktop/30px mobile scene headings, 15px/14px narrative, no clipping.
 - Layout: full-bleed illustration, overlaid bottom narrative, bordered answers, eight segmented progress marks; min-height instead of fixed-height clipping. Existing left introduction remains intact.
 - Tokens: original deep petrol, ivory and antique gold retained intentionally instead of copying the reference's brown/orange palette. Dark text backing keeps the narrative readable.
@@ -127,6 +162,7 @@ This entry supersedes the earlier story-card geometry/pacing approval.
 Source truth: user screenshots in `/var/folders/ll/zfhgnxpx1sl87rndkww8r32w0000gq/T/`: `codex-clipboard-7072bd8b-bcc4-4f7d-853c-db5c86bfe302.png` identifies our left-column drift; `codex-clipboard-954affa4-1aa9-48b9-b6d7-a9437b424509.png` shows bottom-positioned typing; `codex-clipboard-301237d1-c459-45a3-a00d-3fae04e0200a.png` shows lifted narrative and choices; `codex-clipboard-e6184a3a-a42b-420b-9c87-93b22f574970.png` specifies the horizontal Save card / Share / Go again row.
 
 Findings and repairs:
+
 - [P1, resolved] Expanding the result vertically centered the left introduction. Desktop columns now align at their top independently; the left introduction stays at document y=104 for both play and result. Card right and navigation right both measure x=1273 at the final 1366px viewport. The text column ends at x=623, leaving a generous gap before the card at x=813.
 - [P1, resolved] Typing previously reserved options below the narrative without moving it. The narrative now starts lower by the measured decisions height (212px in the verified scene), types, transitions upward over 460ms, then reveals/enables options. Browser measurements changed narrative y=431.48 to y=219.48, with options hidden before and visible after.
 - [P2, resolved] The first measurement initially animated the narrative downward. Only the subsequent upward phase now has a transition; initial placement is immediate.
@@ -134,6 +170,7 @@ Findings and repairs:
 - [P2, resolved] Programmatic result-heading focus showed an unnecessary outline. The heading retains focus for accessibility without the outline; button focus styles remain intact.
 
 Evidence and normalization:
+
 - `qa/inline-result/cover-final.jpg`: 1366×768 CSS/pixels, opening card 460×482 at (813,104), entirely inside the first viewport.
 - `qa/inline-result/typing-final.jpg` and `choices-final.jpg`: 1366×768 CSS/pixels, the same fourth-scene typing and choices states.
 - `qa/inline-result/result-final.jpg`: 1366×1000 CSS/pixels, shared Pyrren result and three buttons, stable left introduction. The earned-result state was also tested, including its optional publishing disclosure; results may grow vertically while the left column stays anchored.

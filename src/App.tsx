@@ -22,6 +22,9 @@ import { HomeFAQ } from "./HomeFAQ";
 import { StoryScene } from "./StoryScene";
 import { adventureScene, JOURNAL_KEY, routes } from "./adventure";
 import { JourneyProgress } from "./JourneyProgress";
+import { MyDragonsPage, CollectionCount } from "./MyDragons";
+import { Atmosphere } from "./Atmosphere";
+import { JOURNAL_EVENT } from "./collection";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -63,8 +66,8 @@ import {
 const RUN_KEY = "threshingday:adventure-run:v1",
   COLLECTION_KEY = "threshingday:collection:v1",
   TIMER_KEY = "threshingday:reminder:v1";
-// Enable manually when the community is established; never seed placeholder riders.
-const SHOW_HOME_PODIUM = false;
+// Public podium enabled by user request; show only actual community data.
+const SHOW_HOME_PODIUM = true;
 function navigate(to: string) {
   window.history.pushState({}, "", to);
   window.dispatchEvent(new Event("site:navigate"));
@@ -150,6 +153,7 @@ function Header({ path }: { path: string }) {
           ["/guides/retry-cooldown/", "Retry Timer"],
           ["/dragons/", "Dragon Atlas"],
           ["/guides/", "Guides"],
+          ["/my-dragons/", "My Dragons"],
         ].map(([to, label]) => (
           <Link
             key={to}
@@ -160,6 +164,7 @@ function Header({ path }: { path: string }) {
             }
           >
             {label}
+            {to === "/my-dragons/" && <CollectionCount />}
           </Link>
         ))}
       </nav>
@@ -176,6 +181,7 @@ function Footer() {
         <p>A little courage. A story of your own.</p>
       </div>
       <div className="footer-links">
+        <Link to="/my-dragons/">My Dragons</Link>
         <Link to="/about/">About</Link>
         <Link to="/sources/">Sources</Link>
         <Link to="/privacy/">Privacy</Link>
@@ -1435,10 +1441,12 @@ function ClearDeviceData() {
                 "threshingday:run-id:v1",
                 "threshingday:published:v1",
                 "threshingday:rider-name:v1",
+                "threshingday:atmosphere",
               ]
                 .map(remove)
                 .every(Boolean);
               setConfirm(false);
+              window.dispatchEvent(new Event(JOURNAL_EVENT));
               setMessage(
                 cleared
                   ? "Your saved story, exploration journal, companions and reminder have been cleared."
@@ -1576,11 +1584,12 @@ function InfoPage({ path }: { path: string }) {
         <h2>What is stored on this device</h2>
         <p>
           Your eight choices and current question, completed journey paths,
-          saved companion IDs, and the end time of a reminder use localStorage.
-          Your exploration journal records discoveries on this device only. Your
-          answers are sent for score verification only if you choose to publish
-          a bond. The answers themselves are not retained in the database. This
-          storage does not follow you to another browser or device.
+          saved companion IDs, your background-motion preference, and the end
+          time of a reminder use localStorage. Your exploration journal records
+          discoveries on this device only. Your answers are sent for score
+          verification only if you choose to publish a bond. The answers
+          themselves are not retained in the database. This storage does not
+          follow you to another browser or device.
         </p>
         <h2>Optional public bonds</h2>
         <p>
@@ -1752,7 +1761,8 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
       .querySelector('meta[name="robots"]')
       ?.setAttribute(
         "content",
-        pageMeta(path).title.startsWith("Page Not Found")
+        path === "/my-dragons/" ||
+          pageMeta(path).title.startsWith("Page Not Found")
           ? "noindex,follow"
           : "index,follow",
       );
@@ -1763,6 +1773,7 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
+      <Atmosphere />
       <Header path={path} />
       <div
         id="main-content"
@@ -1786,6 +1797,8 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
           <GuidesPage />
         ) : guide ? (
           <GuidePage guide={guide} />
+        ) : path === "/my-dragons/" ? (
+          <MyDragonsPage />
         ) : path === "/dragons/" ? (
           <AtlasPage />
         ) : (
