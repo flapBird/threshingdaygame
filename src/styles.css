@@ -5234,3 +5234,130 @@ details p {
     background: #0f2329;
   }
 }
+
+/* Keep the default result close to the introductory column's height. */
+.bond-panel .dragon-card {
+  height: 220px;
+}
+.bond-panel .result-copy > h2 {
+  margin: 14px 0 8px;
+}
+.bond-panel .trait-tags {
+  margin: 8px 0 14px;
+}
+.bond-details {
+  margin-top: 12px;
+  border-top: 1px solid var(--dark-line);
+}
+.bond-details > summary,
+.journey-compact summary {
+  cursor: pointer;
+  color: var(--gold);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 10px 0;
+}
+.bond-details .result-description {
+  margin-top: 4px;
+}
+.journey-compact {
+  border-top: 1px solid var(--dark-line);
+}
+.journey-compact summary span {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.journey-compact .journey-progress {
+  margin: 0 0 10px;
+}
+.journey-compact > .journey-collection-link {
+  margin: 0 0 4px;
+}
+.bond-panel .bond-publish {
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.bond-panel .result-bottom {
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.wall-community-grid {
+  align-items: stretch;
+}
+.wall-distribution {
+  display: flex;
+  flex-direction: column;
+}
+.wall-distribution > .text-link {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.story-card .game-intro.has-last-bond {
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.last-bond {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 18px 0;
+  padding: 12px;
+  border: 1px solid #d4b78070;
+  border-radius: 10px;
+  background: #081b20e8;
+  text-align: left;
+}
+.last-bond > img {
+  width: 50px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.last-bond > div {
+  min-width: 0;
+}
+.last-bond strong {
+  font-size: 14px;
+  color: var(--ivory);
+}
+.last-bond p {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 4px 0;
+}
+.last-bond-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+.last-bond-links a,
+.last-bond-links .text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 0;
+  font-size: 11px;
+  color: var(--gold);
+  min-height: 24px;
+}
+.story-card .has-last-bond .game-intro-copy {
+  padding-top: 24px;
+}
+@media (max-width: 600px) {
+  .last-bond {
+    margin: 14px 14px 0;
+  }
+}
+
+.bond-panel .bond-publish > summary {
+  padding: 8px 0;
+}
+.bond-panel .dragon-card > img {
+  object-position: center 18%;
+}

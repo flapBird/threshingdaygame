@@ -11,7 +11,13 @@ import {
   routes,
 } from "./adventure";
 
-export function JourneyProgress({ answers }: { answers?: number[] }) {
+export function JourneyProgress({
+  answers,
+  compact = false,
+}: {
+  answers?: number[];
+  compact?: boolean;
+}) {
   const [paths, setPaths] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
   const [persistent, setPersistent] = useState(true);
@@ -55,7 +61,7 @@ export function JourneyProgress({ answers }: { answers?: number[] }) {
   const progress = journalProgress(paths);
   const goal = nextDiscovery(paths);
   const trail = answers ? journeyTrail(answers) : null;
-  return (
+  const journal = (
     <section
       className={`journey-progress ${answers ? "journey-result" : "journey-return"}`}
       aria-label="Your exploration journal"
@@ -133,5 +139,25 @@ export function JourneyProgress({ answers }: { answers?: number[] }) {
         </p>
       )}
     </section>
+  );
+  if (!compact) return journal;
+  return (
+    <div className="journey-compact">
+      <details>
+        <summary>
+          Your discoveries & journey
+          <span>
+            {unlocks.length
+              ? "New discovery"
+              : `${progress.companions.length}/6 companions`}
+          </span>
+        </summary>
+        {journal}
+      </details>
+      <a href="/my-dragons/" className="journey-collection-link">
+        Open My Dragons ·{" "}
+        {dragonCollection(JSON.stringify(paths)).collected.length}/30 bonds →
+      </a>
+    </div>
   );
 }

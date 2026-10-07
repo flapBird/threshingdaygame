@@ -25,6 +25,7 @@ import { JourneyProgress } from "./JourneyProgress";
 import { MyDragonsPage, CollectionCount } from "./MyDragons";
 import { Atmosphere } from "./Atmosphere";
 import { JOURNAL_EVENT } from "./collection";
+import { LAST_RUN_KEY, restoreTrialSession } from "./trial-session";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -44,7 +45,6 @@ import {
   scenes,
   RULE_VERSION,
   getResult,
-  parseSavedRun,
   formatDuration,
   remainingTime,
   type Dragon,
@@ -205,7 +205,8 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     [sharedDragon, setSharedDragon] = useState<Dragon | null>(null),
     [sharedRanking, setSharedRanking] = useState<string[]>([]),
     [storyRun, setStoryRun] = useState(0),
-    [started, setStarted] = useState(false);
+    [started, setStarted] = useState(false),
+    [lastAnswers, setLastAnswers] = useState<number[] | null>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const advancingRef = useRef(false);
@@ -217,7 +218,20 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     [],
   );
   useEffect(() => {
-    const saved = parseSavedRun(read(RUN_KEY));
+    const { resume: saved, lastAnswers: previousAnswers } = restoreTrialSession(
+      read(RUN_KEY),
+      read(LAST_RUN_KEY),
+    );
+    setLastAnswers(previousAnswers);
+    if (previousAnswers)
+      write(
+        LAST_RUN_KEY,
+        JSON.stringify({
+          version: RULE_VERSION,
+          answers: previousAnswers,
+          step: 7,
+        }),
+      );
     if (saved) {
       setAnswers(saved.answers);
       setStep(saved.step);
@@ -263,6 +277,11 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
 
       if (step === 7) {
         save(a, step);
+        setLastAnswers(a);
+        write(
+          LAST_RUN_KEY,
+          JSON.stringify({ version: RULE_VERSION, answers: a, step: 7 }),
+        );
         write("threshingday:run-id:v1", crypto.randomUUID());
         focus();
       } else {
@@ -302,6 +321,8 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     focus();
   };
   const scene = adventureScene(answers.slice(0, step));
+  const lastResult = lastAnswers ? getResult(lastAnswers) : null;
+  const lastRarity = lastResult ? getBondRarity(lastResult.ranking) : null;
   const completed = answers.length === scenes.length;
   const showingBond = completed || sharedDragon !== null;
   useEffect(() => {
@@ -351,7 +372,6 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
           <External href="https://dragonkind.com/">Open Dragonkind</External>
           <span>Our story is an independent fan experience.</span>
         </p>
-        {!started && <JourneyProgress key={storyRun} />}
       </div>
       <div
         className={`game-card story-card ${showingBond ? "showing-bond" : ""} ${started ? "game-started" : ""} ${transitioning ? "story-leaving" : ""}`}
@@ -380,7 +400,39 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
             onRestart={restart}
           />
         ) : !started ? (
-          <div className="game-intro">
+          <div className={`game-intro ${lastResult ? "has-last-bond" : ""}`}>
+            {lastResult && (
+              <aside className="last-bond" aria-label="Your previous journey">
+                <img
+                  src={`/images/${lastResult.dragon.id}.webp`}
+                  alt={lastResult.dragon.name}
+                  width="56"
+                  height="66"
+                />
+                <div>
+                  <strong>Welcome back</strong>
+                  <p>
+                    Last bond: {lastResult.dragon.name} · {lastRarity?.tier}{" "}
+                    {lastResult.dragon.color.toLowerCase()} dragon
+                  </p>
+                  <div className="last-bond-links">
+                    <button
+                      className="text-button"
+                      onClick={() => {
+                        setAnswers(lastAnswers!);
+                        setStep(7);
+                        setStarted(true);
+                      }}
+                    >
+                      View last card
+                    </button>
+                    <Link to="/my-dragons/">
+                      My Dragons <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              </aside>
+            )}
             <div className="game-intro-copy">
               <h2>
                 Your dragon
@@ -894,34 +946,11 @@ function BondResult({
         <h2 ref={headingRef} tabIndex={-1}>
           {dragon.name} has chosen you.
         </h2>
-        <p className="result-description">{dragon.description}</p>
         <div className="trait-tags">
           {(ranking.length ? ranking : [dragon.trait]).map((t) => (
             <span key={t}>{t}</span>
           ))}
         </div>
-        {rarity && (
-          <div className="bond-rarity">
-            <span
-              className={`rarity-badge rarity-${rarity.tier.toLowerCase()}`}
-            >
-              {rarity.tier} bond
-            </span>
-            <p>{rarity.percent}% of all answer paths share this trait pair.</p>
-            <details>
-              <summary>How rare is this bond?</summary>
-              <p>
-                {rarity.paths.toLocaleString("en-US")} of{" "}
-                {rarity.total.toLocaleString("en-US")} possible paths lead to{" "}
-                {ranking.join(" + ")}, in that order. Each path counts equally.
-                This describes our fan quiz’s answer combinations, not real
-                riders or official Dragonkind odds.{" "}
-                <Link to="/sources/#bond-rarity">See all tiers.</Link>
-              </p>
-            </details>
-          </div>
-        )}
-        <blockquote>“{dragon.oath}”</blockquote>
         <div className="bond-primary-actions">
           <button
             className="button primary"
@@ -937,7 +966,39 @@ function BondResult({
             Go again
           </button>
         </div>
-        {earnedAnswers && <JourneyProgress answers={earnedAnswers} />}
+        <details className="bond-details">
+          <summary>About your bond & rarity</summary>
+          <p className="result-description">{dragon.description}</p>
+          {rarity && (
+            <div className="bond-rarity">
+              <span
+                className={`rarity-badge rarity-${rarity.tier.toLowerCase()}`}
+              >
+                {rarity.tier} bond
+              </span>
+              <p>
+                {rarity.percent}% of all answer paths share this trait pair.
+              </p>
+              <details>
+                <summary>How rare is this bond?</summary>
+                <p>
+                  {rarity.paths.toLocaleString("en-US")} of{" "}
+                  {rarity.total.toLocaleString("en-US")} possible paths lead to{" "}
+                  {ranking.join(" + ")}, in that order. Each path counts
+                  equally. This describes our fan quiz’s answer combinations,
+                  not real riders or official Dragonkind odds.{" "}
+                  <Link to="/sources/#bond-rarity">See all tiers.</Link>
+                </p>
+              </details>
+            </div>
+          )}
+          <blockquote>“{dragon.oath}”</blockquote>
+          <p className="fan-note">
+            An original fan result, separate from your official Dragonkind bond.
+            Names, personalities and artwork are our own.
+          </p>
+        </details>
+        {earnedAnswers && <JourneyProgress answers={earnedAnswers} compact />}
         {!earnedAnswers && (
           <p className="shared-journey-note">
             This is a shared companion. Play your own journey to discover routes
@@ -979,10 +1040,6 @@ function BondResult({
             <PublishBond answers={earnedAnswers} />
           </details>
         )}
-        <p className="fan-note">
-          An original fan result, separate from your official Dragonkind bond.
-          Names, personalities and artwork are our own.
-        </p>
         <div className="result-bottom">
           <button className="text-button" onClick={bookmark}>
             <BookmarkSimple size={16} weight={saved ? "fill" : "regular"} />
@@ -1434,6 +1491,7 @@ function ClearDeviceData() {
             onClick={() => {
               const cleared = [
                 RUN_KEY,
+                LAST_RUN_KEY,
                 COLLECTION_KEY,
                 JOURNAL_KEY,
                 "threshingday:run:v1",
@@ -1583,13 +1641,13 @@ function InfoPage({ path }: { path: string }) {
         </p>
         <h2>What is stored on this device</h2>
         <p>
-          Your eight choices and current question, completed journey paths,
-          saved companion IDs, your background-motion preference, and the end
-          time of a reminder use localStorage. Your exploration journal records
-          discoveries on this device only. Your answers are sent for score
-          verification only if you choose to publish a bond. The answers
-          themselves are not retained in the database. This storage does not
-          follow you to another browser or device.
+          Your eight choices and current question, your last completed trial,
+          completed journey paths, saved companion IDs, your background-motion
+          preference, and the end time of a reminder use localStorage. Your
+          exploration journal records discoveries on this device only. Your
+          answers are sent for score verification only if you choose to publish
+          a bond. The answers themselves are not retained in the database. This
+          storage does not follow you to another browser or device.
         </p>
         <h2>Optional public bonds</h2>
         <p>
@@ -1723,10 +1781,19 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
   const [path, setPath] = useState(normalizePath(initialPath)),
     [routeKey, setRouteKey] = useState(initialPath);
   const pageRef = useRef<HTMLDivElement>(null);
+  const homeVisit = useRef(0);
   useEffect(() => {
     const update = () => {
       setPath(normalizePath(window.location.pathname));
-      setRouteKey(window.location.pathname + window.location.search);
+      const homeReturn =
+        window.location.pathname === "/" &&
+        !window.location.search &&
+        !window.location.hash;
+      setRouteKey(
+        window.location.pathname +
+          window.location.search +
+          (homeReturn ? `:visit-${++homeVisit.current}` : ""),
+      );
       if (window.location.hash)
         requestAnimationFrame(() =>
           document
