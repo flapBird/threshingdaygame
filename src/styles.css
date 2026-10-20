@@ -846,10 +846,6 @@ details p {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
-.source-tag {
-  font-size: 12px !important;
-  color: var(--gold) !important;
-}
 .article-layout aside {
   border-left: 1px solid var(--line);
   padding-left: 28px;

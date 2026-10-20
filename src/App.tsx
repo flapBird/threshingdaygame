@@ -1315,7 +1315,6 @@ function GuidePage({ guide }: { guide: Guide }) {
                   {s.text.map((p) => (
                     <p key={p}>{p}</p>
                   ))}
-                  {s.label && <p className="source-tag">{s.label}</p>}
                 </section>
               </details>
             ) : (
@@ -1324,7 +1323,6 @@ function GuidePage({ guide }: { guide: Guide }) {
                 {s.text.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
-                {s.label && <p className="source-tag">{s.label}</p>}
               </section>
             ),
           )}
