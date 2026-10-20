@@ -1286,6 +1286,7 @@ function GuidesPage() {
   );
 }
 function GuidePage({ guide }: { guide: Guide }) {
+  const showExternalLinks = guide.showExternalLinks !== false;
   return (
     <main className="editorial-page article-page">
       <div className="breadcrumbs">
@@ -1315,10 +1316,13 @@ function GuidePage({ guide }: { guide: Guide }) {
                   {s.text.map((p) => (
                     <p key={p}>{p}</p>
                   ))}
-                  {s.source && (
+                  {s.source && showExternalLinks && (
                     <External href={s.source} className="source-link">
                       {s.label || "Source"}
                     </External>
+                  )}
+                  {s.label && !showExternalLinks && (
+                    <p className="source-tag">{s.label}</p>
                   )}
                 </section>
               </details>
@@ -1328,12 +1332,12 @@ function GuidePage({ guide }: { guide: Guide }) {
                 {s.text.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
-                {s.source && (
+                {s.source && showExternalLinks && (
                   <External href={s.source} className="source-link">
                     {s.label || "Source"}
                   </External>
                 )}
-                {s.label && !s.source && (
+                {s.label && (!s.source || !showExternalLinks) && (
                   <p className="source-tag">{s.label}</p>
                 )}
               </section>
@@ -1364,9 +1368,11 @@ function GuidePage({ guide }: { guide: Guide }) {
           {guide.slug === "retry-cooldown" && (
             <a href="#timer">Personal retry reminder</a>
           )}
-          <External href="https://dragonkind.com/" className="text-link">
-            Official Dragonkind
-          </External>
+          {showExternalLinks && (
+            <External href="https://dragonkind.com/" className="text-link">
+              Official Dragonkind
+            </External>
+          )}
           <p>Our trial is a separate, original fan story.</p>
         </aside>
       </div>

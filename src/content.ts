@@ -11,6 +11,7 @@ export type Guide = {
   title: string;
   short: string;
   intro: string;
+  showExternalLinks?: boolean;
   sections: {
     id: string;
     title: string;
@@ -23,6 +24,7 @@ export type Guide = {
 export const guides: Guide[] = [
   {
     slug: "how-to-play",
+    showExternalLinks: false,
     number: "01",
     category: "Start your journey",
     title: "How to play Dragonkind",
@@ -69,6 +71,7 @@ export const guides: Guide[] = [
   },
   {
     slug: "code-not-received",
+    showExternalLinks: false,
     number: "02",
     category: "Getting into the game",
     title: "Dragonkind code not arriving?",
