@@ -1,3 +1,28 @@
+# Design QA · Route immersion and reading · 2026-10-20
+
+**final result: passed**
+
+## Scope and visual grounding
+
+The user approved the first competitor-gap batch: optional route ambience and choice/bond sounds, more specific narrative consequences, and a directory for existing homepage content. The two supplied October 20 screenshots inform the scenic presentation and numbered reading directory. This is a scoped adaptation within the existing petrol/gold design, not a full clone. The existing compact game, original artwork, anchored left introduction, community-first ordering and three-button result row remain.
+
+## Checked experience
+
+- At 1440 × 900, the original hero remains aligned with the header, and the extended scene, answers and sound controls fit in the first viewport. `qa/immersion/game-desktop.png` shows the new Lantern Grove illustration in the production build. The three 1024 × 1536 route WebPs are 160–268 KiB each; their prompts and original style references are recorded in `docs/route-art.md`.
+- `qa/immersion/reading-desktop.png` shows the numbered directory beside the existing What / How content. Sections retain readable line lengths, the dragon portrait and the dark theme. Chapters, FAQ, return-to-story and guide/atlas links were exercised. The sidebar is sticky on desktop and becomes a two-column directory on mobile.
+- At 390 × 844, the ridge scene and all three answers remain readable, the sound control flows below the card, and document scroll width is 375px including the browser's scrollbar allocation (no horizontal overflow). `qa/immersion/ridge-mobile.png` records the stable choices state. The Grove scene and mobile FAQ anchors were also checked.
+- A full eight-choice river journey was completed in the browser. Immediate outcomes, the lantern trade and earlier encounter memory appear in later scenes; the result and local discovery update correctly. Save card / Share / Go again have identical vertical positions. This run did not publish a public bond.
+- The sound toggle starts off; clicking it enables the current route and exposes an accessible volume slider. Volume changes persist, while reloading starts silently and restores the previous-bond summary. Pausing background motion leaves sound enabled. Hidden-tab cleanup and resume, duplicate-feedback suppression and blocked-audio fallback are covered by audio lifecycle tests; subjective sound quality and actual OS reduced-motion changes were not separately measured.
+- Reading-anchor clicks and browser Back preserve the current result and sound setting. A review found that replaying an Atlas shared card could leave the router's location reference stale; the reference is now synchronized without remounting. The exact Atlas → shared Vesper → Go again → enable sound → reading chapters → Back sequence was rerun and retained question 1, sound and no preselected answer. Explicit home navigation still starts a fresh visit, while reload preserves unfinished answers and shows the prior completed card.
+
+## Validation
+
+33 unit tests pass, including exhaustive v1 scoring preservation across all 6,561 paths and route-specific consequences. TypeScript, production build, 17-route prerender and all 4 Sites packaging checks pass. Protected Sites worker/packaging files are unchanged. The production preview loads all new scene resources and reported no warning/error logs in the checked state. The local Cloudflare community endpoint returns actual zero published bonds/riders; no records were seeded. `git diff --check` passes. No remote deployment, migration or DNS change was performed. No `llms.txt` exists in the project.
+
+An early build exposed a Node prerender error from importing CSS inside SoundControl; the stylesheet now loads from the client entry, and the subsequent full build passes. No actionable P0/P1/P2 issue remains within this batch.
+
+---
+
 # Design QA · Collection and atmosphere · 2026-10-07
 
 **final result: passed**

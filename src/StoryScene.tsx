@@ -77,7 +77,11 @@ export function StoryScene({
       style={{ "--decisions-height": `${decisionHeight}px` } as CSSProperties}
     >
       <div className="story-narrative">
-        {consequence && <p className="scene-consequence">{consequence}</p>}
+        {consequence && (
+          <p className="scene-consequence" role="status" aria-atomic="true">
+            {consequence}
+          </p>
+        )}
         <h2 ref={titleRef} tabIndex={-1}>
           {scene.title}
         </h2>

@@ -104,7 +104,7 @@ const groups: { title: string; questions: Question[] }[] = [
       {
         question: "Can I retry, reset or get a different dragon?",
         answer:
-          "Here, choose Explore another path after your result, or Begin a new story in the game card. Change your choices to discover a different companion, with no cooldown. Official Dragonkind allows repeat failed attempts until you bond; its FAQ does not promise a reset after bonding. Check the controls in your official account for that option.",
+          "Here, choose Go again after your result, or Start over during the trial. Change your choices to discover a different companion, with no cooldown. Official Dragonkind allows repeat failed attempts until you bond; its FAQ does not promise a reset after bonding. Check the controls in your official account for that option.",
         links: [{ href: "/play/", label: "Explore another path" }],
       },
       {
@@ -198,7 +198,11 @@ const groups: { title: string; questions: Question[] }[] = [
 
 export function HomeFAQ() {
   return (
-    <section className="home-faq content-width" aria-labelledby="faq-title">
+    <section
+      className="home-faq content-width"
+      id="player-questions"
+      aria-labelledby="faq-title"
+    >
       <div className="faq-heading">
         <p className="eyebrow">FAQ</p>
         <h2 id="faq-title">Threshing Day game FAQ</h2>

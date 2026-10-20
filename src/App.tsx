@@ -24,6 +24,9 @@ import { adventureScene, JOURNAL_KEY, routes } from "./adventure";
 import { JourneyProgress } from "./JourneyProgress";
 import { MyDragonsPage, CollectionCount } from "./MyDragons";
 import { Atmosphere } from "./Atmosphere";
+import { HomeReadingNav } from "./HomeReadingNav";
+import { SOUND_VOLUME_KEY, useJourneyAudio } from "./journey-audio";
+import { SoundControl } from "./SoundControl";
 import { JOURNAL_EVENT } from "./collection";
 import { LAST_RUN_KEY, restoreTrialSession } from "./trial-session";
 import {
@@ -210,6 +213,7 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const advancingRef = useRef(false);
+  const earnedSound = useRef(false);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
     () => () => {
@@ -270,12 +274,14 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
     advancingRef.current = true;
     setTransitioning(true);
     setSelected(choiceIndex);
+    audio.playChoice();
     // Briefly show the selected answer and ignore a double click on the next scene.
     advanceTimer.current = setTimeout(() => {
       const a = [...answers.slice(0, step), choiceIndex];
       setAnswers(a);
 
       if (step === 7) {
+        earnedSound.current = true;
         save(a, step);
         setLastAnswers(a);
         write(
@@ -315,6 +321,7 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
       "",
       `${window.location.pathname}#play-card`,
     );
+    window.dispatchEvent(new Event("site:trial-restart"));
     remove(RUN_KEY);
     remove("threshingday:run-id:v1");
     setStarted(true);
@@ -325,11 +332,20 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
   const lastRarity = lastResult ? getBondRarity(lastResult.ranking) : null;
   const completed = answers.length === scenes.length;
   const showingBond = completed || sharedDragon !== null;
+  const soundRoute = step > 0 ? routes[answers[0] ?? 0].id : null;
+  const audio = useJourneyAudio(soundRoute, true);
   useEffect(() => {
     // Warm the next illustration without delaying a player's choice.
     if (!started || step >= scenes.length - 1) return;
-    const nextImage = new Image();
-    nextImage.src = `/images/${adventureScene([...answers.slice(0, step), 0]).art}.webp`;
+    const upcoming = new Set(
+      [0, 1, 2].map(
+        (choice) => adventureScene([...answers.slice(0, step), choice]).art,
+      ),
+    );
+    upcoming.forEach((art) => {
+      const nextImage = new Image();
+      nextImage.src = `/images/${art}.webp`;
+    });
   }, [started, step, answers]);
   return (
     <section
@@ -372,192 +388,215 @@ function Trial({ fullPage = false }: { fullPage?: boolean }) {
           <External href="https://dragonkind.com/">Open Dragonkind</External>
           <span>Our story is an independent fan experience.</span>
         </p>
-      </div>
-      <div
-        className={`game-card story-card ${showingBond ? "showing-bond" : ""} ${started ? "game-started" : ""} ${transitioning ? "story-leaving" : ""}`}
-        ref={panelRef}
-        id="play-card"
-      >
-        {!showingBond && (
-          <div className="story-backdrop" aria-hidden="true">
-            <img
-              key={started ? step : "cover"}
-              src={`/images/${started ? scene.art : "crossing"}.webp`}
-              style={{
-                objectPosition:
-                  scene.art === "crossing" ? "50% 38%" : "50% 28%",
-              }}
-              alt=""
-              fetchPriority="high"
-            />
-          </div>
+        {!fullPage && (
+          <a className="hero-reading-link" href="#about-game">
+            Explore the world <ArrowRight size={15} aria-hidden="true" />
+          </a>
         )}
-        {showingBond ? (
-          <BondResult
-            earnedAnswers={sharedDragon ? null : answers}
-            sharedDragon={sharedDragon}
-            sharedRanking={sharedRanking}
-            onRestart={restart}
-          />
-        ) : !started ? (
-          <div className={`game-intro ${lastResult ? "has-last-bond" : ""}`}>
-            {lastResult && (
-              <aside className="last-bond" aria-label="Your previous journey">
-                <img
-                  src={`/images/${lastResult.dragon.id}.webp`}
-                  alt={lastResult.dragon.name}
-                  width="56"
-                  height="66"
-                />
-                <div>
-                  <strong>Welcome back</strong>
-                  <p>
-                    Last bond: {lastResult.dragon.name} · {lastRarity?.tier}{" "}
-                    {lastResult.dragon.color.toLowerCase()} dragon
-                  </p>
-                  <div className="last-bond-links">
-                    <button
-                      className="text-button"
-                      onClick={() => {
-                        setAnswers(lastAnswers!);
-                        setStep(7);
-                        setStarted(true);
-                      }}
-                    >
-                      View last card
-                    </button>
-                    <Link to="/my-dragons/">
-                      My Dragons <ArrowRight size={14} />
-                    </Link>
-                  </div>
-                </div>
-              </aside>
-            )}
-            <div className="game-intro-copy">
-              <h2>
-                Your dragon
-                <br />
-                is waiting.
-              </h2>
-              <p>
-                Three ways into the valley. Every choice leaves a mark. Where
-                will your first step take you?
-              </p>
-              <button
-                className="button primary"
-                disabled={!loaded}
-                onClick={() => {
-                  setStarted(true);
-                  focus();
+      </div>
+      <div className="trial-experience">
+        <div
+          className={`game-card story-card ${showingBond ? "showing-bond" : ""} ${started ? "game-started" : ""} ${transitioning ? "story-leaving" : ""}`}
+          ref={panelRef}
+          id="play-card"
+          data-route={soundRoute ?? "valley"}
+        >
+          {!showingBond && (
+            <div className="story-backdrop" aria-hidden="true">
+              <img
+                key={started ? step : "cover"}
+                src={`/images/${started ? scene.art : "crossing"}.webp`}
+                style={{
+                  objectPosition:
+                    scene.art === "crossing" ? "50% 38%" : "50% 28%",
                 }}
-              >
-                Enter the valley <ArrowRight size={20} />
-              </button>
-              <span>8 choices · 3 routes · 6 original dragons</span>
+                alt=""
+                fetchPriority="high"
+              />
             </div>
-          </div>
-        ) : (
-          <div className="trial-panel">
-            <div className="step-header">
-              <span>
-                {String(step + 1).padStart(2, "0")} / 08 · {scene.route}
-              </span>
-              {step > 0 && (
-                <button
-                  className="back-button"
-                  aria-label="Previous question"
-                  disabled={transitioning}
-                  onClick={previous}
-                >
-                  <CaretLeft size={17} />
-                  Back
-                </button>
+          )}
+          {showingBond ? (
+            <BondResult
+              earnedAnswers={sharedDragon ? null : answers}
+              sharedDragon={sharedDragon}
+              sharedRanking={sharedRanking}
+              onRestart={restart}
+              onReveal={() => {
+                if (earnedSound.current) {
+                  earnedSound.current = false;
+                  audio.playBond();
+                }
+              }}
+            />
+          ) : !started ? (
+            <div className={`game-intro ${lastResult ? "has-last-bond" : ""}`}>
+              {lastResult && (
+                <aside className="last-bond" aria-label="Your previous journey">
+                  <img
+                    src={`/images/${lastResult.dragon.id}.webp`}
+                    alt={lastResult.dragon.name}
+                    width="56"
+                    height="66"
+                  />
+                  <div>
+                    <strong>Welcome back</strong>
+                    <p>
+                      Last bond: {lastResult.dragon.name} · {lastRarity?.tier}{" "}
+                      {lastResult.dragon.color.toLowerCase()} dragon
+                    </p>
+                    <div className="last-bond-links">
+                      <button
+                        className="text-button"
+                        onClick={() => {
+                          setAnswers(lastAnswers!);
+                          setStep(7);
+                          setStarted(true);
+                        }}
+                      >
+                        View last card
+                      </button>
+                      <Link to="/my-dragons/">
+                        My Dragons <ArrowRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
+                </aside>
               )}
-            </div>
-            <div
-              className="story-progress"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={8}
-              aria-valuenow={step + 1}
-              aria-label={`Question ${step + 1} of 8`}
-            >
-              {scenes.map((_, index) => (
-                <span
-                  key={index}
-                  className={
-                    index < step ? "complete" : index === step ? "current" : ""
-                  }
-                />
-              ))}
-            </div>
-            <div className="story-slide" key={`${storyRun}-${step}`}>
-              <StoryScene
-                scene={scene}
-                titleRef={titleRef}
-                consequence={scene.consequence}
-              >
-                <div
-                  className="choices"
-                  role="group"
-                  aria-label="Choose your next path"
+              <div className="game-intro-copy">
+                <h2>
+                  Your dragon
+                  <br />
+                  is waiting.
+                </h2>
+                <p>
+                  Three ways into the valley. Every choice leaves a mark. Where
+                  will your first step take you?
+                </p>
+                <button
+                  className="button primary"
+                  disabled={!loaded}
+                  onClick={() => {
+                    setStarted(true);
+                    audio.playChoice();
+                    focus();
+                  }}
                 >
-                  <p id="choice-instructions" className="sr-only">
-                    Choose an answer to move directly to the next scene.
-                  </p>
-                  {scene.choices.map((option, i) => (
-                    <button
-                      type="button"
-                      className={`choice ${selected === i ? "selected" : ""}`}
-                      key={`${step}-${i}`}
-                      disabled={!loaded || transitioning}
-                      aria-describedby="choice-instructions"
-                      style={{ "--choice-index": i } as React.CSSProperties}
-                      onClick={(event) => {
-                        if (event.detail > 1) return;
-                        next(i);
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.repeat && ["Enter", " "].includes(event.key))
-                          event.preventDefault();
-                      }}
-                    >
-                      <span className="choice-letter" aria-hidden="true">
-                        {String.fromCharCode(65 + i)}
-                      </span>
-                      <span>
-                        {option.text}
-                        {step === 0 && (
-                          <small className="choice-route">
-                            {routes[i].name}
-                          </small>
-                        )}
-                      </span>
-                      <span className="choice-check" aria-hidden="true">
-                        {selected === i && <Check size={20} weight="bold" />}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                {!storageOK && (
-                  <p className="sr-only" role="status">
-                    You can keep playing. This browser cannot save your
-                    progress.
-                  </p>
-                )}
+                  Enter the valley <ArrowRight size={20} />
+                </button>
+                <span>8 choices · 3 routes · 6 original dragons</span>
+              </div>
+            </div>
+          ) : (
+            <div className="trial-panel">
+              <div className="step-header">
+                <span>
+                  {String(step + 1).padStart(2, "0")} / 08 · {scene.route}
+                </span>
                 {step > 0 && (
                   <button
-                    className="restart-link"
+                    className="back-button"
+                    aria-label="Previous question"
                     disabled={transitioning}
-                    onClick={restart}
+                    onClick={previous}
                   >
-                    Start over
+                    <CaretLeft size={17} />
+                    Back
                   </button>
                 )}
-              </StoryScene>
+              </div>
+              <div
+                className="story-progress"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={8}
+                aria-valuenow={step + 1}
+                aria-label={`Question ${step + 1} of 8`}
+              >
+                {scenes.map((_, index) => (
+                  <span
+                    key={index}
+                    className={
+                      index < step
+                        ? "complete"
+                        : index === step
+                          ? "current"
+                          : ""
+                    }
+                  />
+                ))}
+              </div>
+              <div className="story-slide" key={`${storyRun}-${step}`}>
+                <StoryScene
+                  scene={scene}
+                  titleRef={titleRef}
+                  consequence={scene.consequence}
+                >
+                  <div
+                    className="choices"
+                    role="group"
+                    aria-label="Choose your next path"
+                  >
+                    <p id="choice-instructions" className="sr-only">
+                      Choose an answer to move directly to the next scene.
+                    </p>
+                    {scene.choices.map((option, i) => (
+                      <button
+                        type="button"
+                        className={`choice ${selected === i ? "selected" : ""}`}
+                        key={`${step}-${i}`}
+                        disabled={!loaded || transitioning}
+                        aria-describedby="choice-instructions"
+                        style={{ "--choice-index": i } as React.CSSProperties}
+                        onClick={(event) => {
+                          if (event.detail > 1) return;
+                          next(i);
+                        }}
+                        onKeyDown={(event) => {
+                          if (
+                            event.repeat &&
+                            ["Enter", " "].includes(event.key)
+                          )
+                            event.preventDefault();
+                        }}
+                      >
+                        <span className="choice-letter" aria-hidden="true">
+                          {String.fromCharCode(65 + i)}
+                        </span>
+                        <span>
+                          {option.text}
+                          {step === 0 && (
+                            <small className="choice-route">
+                              {routes[i].name}
+                            </small>
+                          )}
+                        </span>
+                        <span className="choice-check" aria-hidden="true">
+                          {selected === i && <Check size={20} weight="bold" />}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  {!storageOK && (
+                    <p className="sr-only" role="status">
+                      You can keep playing. This browser cannot save your
+                      progress.
+                    </p>
+                  )}
+                  {step > 0 && (
+                    <button
+                      className="restart-link"
+                      disabled={transitioning}
+                      onClick={restart}
+                    >
+                      Start over
+                    </button>
+                  )}
+                </StoryScene>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+        <SoundControl {...audio} route={soundRoute} />
       </div>
     </section>
   );
@@ -599,123 +638,137 @@ function Homepage() {
         </ol>
       </section>
       <HomeDragonWall />
-      <section
-        className="home-explainer content-width"
-        aria-labelledby="what-title"
-      >
-        <div className="explainer-copy">
-          <p className="eyebrow">A bond begins with a choice</p>
-          <h2 id="what-title">
-            What is the
-            <br />
-            Threshing Day Game?
-          </h2>
-          <p>
-            In Rebecca Yarros’s world, Threshing is the trial where would-be
-            riders seek a dragon bond. Our Threshing Day Game is a free,
-            browser-based fan adventure about finding your dragon companion.
-            Choose the sunken way, lantern grove or windward ridge. Your
-            decisions lead to different encounters, crossings and consequences
-            before you meet one of six original companions.
-          </p>
-          <p>
-            Your strongest trait — insight, loyalty, freedom, courage, resolve
-            or curiosity — determines your bond. There are no wrong answers or
-            failed attempts here. The same choices lead to the same companion,
-            and you can replay immediately.
-          </p>
-          <p>
-            This is our original story, separate from Rebecca Yarros’s official
-            Dragonkind game. Your result includes a dragon portrait, a personal
-            oath and a downloadable card.
-          </p>
-          <Link to="/sources/" className="text-link">
-            Our story & matching rules <ArrowRight size={18} />
-          </Link>
-        </div>
-        <div className="companion-showcase">
-          <img
-            src="/images/aureth.webp"
-            alt="Aureth, our original blue dragon"
-            width="800"
-            height="1000"
-            loading="lazy"
-          />
+      <div className="home-reading content-width">
+        <HomeReadingNav />
+        <div className="home-reading-body">
+          <section
+            className="home-explainer"
+            id="about-game"
+            aria-labelledby="what-title"
+          >
+            <div className="explainer-copy">
+              <p className="eyebrow">A bond begins with a choice</p>
+              <h2 id="what-title">
+                What is the
+                <br />
+                Threshing Day Game?
+              </h2>
+              <p>
+                In Rebecca Yarros’s world, Threshing is the trial where would-be
+                riders seek a dragon bond. Our Threshing Day Game is a free,
+                browser-based fan adventure about finding your dragon companion.
+                Choose the sunken way, lantern grove or windward ridge. Your
+                decisions lead to different encounters, crossings and
+                consequences before you meet one of six original companions.
+              </p>
+              <p>
+                Your strongest trait — insight, loyalty, freedom, courage,
+                resolve or curiosity — determines your bond. There are no wrong
+                answers or failed attempts here. The same choices lead to the
+                same companion, and you can replay immediately.
+              </p>
+              <p>
+                This is our original story, separate from Rebecca Yarros’s
+                official Dragonkind game. Your result includes a dragon
+                portrait, a personal oath and a downloadable card.
+              </p>
+              <Link to="/sources/" className="text-link">
+                Our story & matching rules <ArrowRight size={18} />
+              </Link>
+            </div>
+            <div className="companion-showcase">
+              <img
+                src="/images/aureth.webp"
+                alt="Aureth, our original blue dragon"
+                width="800"
+                height="1000"
+                loading="lazy"
+              />
+              <div>
+                <span>Blue · Freedom</span>
+                <h3>Aureth</h3>
+                <p>The Unbound Horizon</p>
+                <Link to="/dragons/">
+                  Meet all six companions <ArrowRight size={17} />
+                </Link>
+              </div>
+            </div>
+          </section>
+          <section
+            className="how-section"
+            id="how-to-play"
+            aria-labelledby="how-title"
+          >
+            <div>
+              <div className="section-heading">
+                <h2 id="how-title">How to play Threshing Day Game</h2>
+                <p>Three minutes. A story to keep.</p>
+              </div>
+              <ol className="how-steps">
+                {[
+                  [
+                    "Enter the valley",
+                    "Start the trial on this page. No email, download or account is required.",
+                  ],
+                  [
+                    "Make eight choices",
+                    "Choose a route and react to what you find. Later scenes remember your decisions; use Back to explore another way.",
+                  ],
+                  [
+                    "Meet your dragon",
+                    "Reveal your companion and new discoveries. Save a card, share your result, and look back through your journey.",
+                  ],
+                  [
+                    "Find what you missed",
+                    "Follow your next discovery hint to explore three routes, nine opening encounters and six companions. Publishing your bond is optional.",
+                  ],
+                ].map(([title, text], i) => (
+                  <li key={title}>
+                    <span>{String(i + 1).padStart(2, "0")}</span>
+                    <h3>{title}</h3>
+                    <p>{text}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+          <section
+            className="home-guides"
+            id="field-guides"
+            aria-labelledby="guides-title"
+          >
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">Keep exploring</p>
+                <h2 id="guides-title">A little guidance for the journey.</h2>
+              </div>
+              <Link to="/guides/" className="text-link">
+                All guides <ArrowRight size={18} />
+              </Link>
+            </div>
+            <div className="guide-grid">
+              {guides.slice(0, 3).map((g) => (
+                <Link
+                  to={`/guides/${g.slug}/`}
+                  className="guide-preview"
+                  key={g.slug}
+                >
+                  <span className="guide-number">{g.number}</span>
+                  <h3>{g.title}</h3>
+                  <p>{g.short}</p>
+                  <span className="text-link">
+                    Read the guide <ArrowRight size={18} />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
           <div>
-            <span>Blue · Freedom</span>
-            <h3>Aureth</h3>
-            <p>The Unbound Horizon</p>
-            <Link to="/dragons/">
-              Meet all six companions <ArrowRight size={17} />
-            </Link>
+            <DiscoveryLinks />
           </div>
+          <HomeFAQ />
         </div>
-      </section>
-      <section className="how-section">
-        <div className="content-width">
-          <div className="section-heading">
-            <h2>How to play Threshing Day Game</h2>
-            <p>Three minutes. A story to keep.</p>
-          </div>
-          <ol className="how-steps">
-            {[
-              [
-                "Enter the valley",
-                "Start the trial on this page. No email, download or account is required.",
-              ],
-              [
-                "Make eight choices",
-                "Choose a route and react to what you find. Later scenes remember your decisions; use Back to explore another way.",
-              ],
-              [
-                "Meet your dragon",
-                "Reveal your companion and new discoveries. Save a card, share your result, and look back through your journey.",
-              ],
-              [
-                "Find what you missed",
-                "Follow your next discovery hint to explore three routes, nine opening encounters and six companions. Publishing your bond is optional.",
-              ],
-            ].map(([title, text], i) => (
-              <li key={title}>
-                <span>{String(i + 1).padStart(2, "0")}</span>
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-      <section className="home-guides content-width">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Keep exploring</p>
-            <h2>A little guidance for the journey.</h2>
-          </div>
-          <Link to="/guides/" className="text-link">
-            All guides <ArrowRight size={18} />
-          </Link>
-        </div>
-        <div className="guide-grid">
-          {guides.slice(0, 3).map((g) => (
-            <Link
-              to={`/guides/${g.slug}/`}
-              className="guide-preview"
-              key={g.slug}
-            >
-              <span className="guide-number">{g.number}</span>
-              <h3>{g.title}</h3>
-              <p>{g.short}</p>
-              <span className="text-link">
-                Read the guide <ArrowRight size={18} />
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-      <div className="content-width">
-        <DiscoveryLinks />
       </div>
-      <HomeFAQ />
     </>
   );
 }
@@ -790,11 +843,13 @@ function BondResult({
   sharedDragon,
   sharedRanking,
   onRestart,
+  onReveal,
 }: {
   earnedAnswers: number[] | null;
   sharedDragon: Dragon | null;
   sharedRanking: string[];
   onRestart: () => void;
+  onReveal: () => void;
 }) {
   const result = earnedAnswers ? getResult(earnedAnswers) : null;
   const dragon = result?.dragon ?? sharedDragon!;
@@ -807,6 +862,7 @@ function BondResult({
   const [imageReady, setImageReady] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const revealAnnounced = useRef(false);
   const [exported, setExported] = useState<{
     url: string;
     filename: string;
@@ -840,8 +896,12 @@ function BondResult({
     };
   }, [imageReady]);
   useEffect(() => {
-    if (revealed) headingRef.current?.focus({ preventScroll: true });
-  }, [revealed]);
+    if (revealed && !revealAnnounced.current) {
+      revealAnnounced.current = true;
+      headingRef.current?.focus({ preventScroll: true });
+      onReveal();
+    }
+  }, [revealed, onReveal]);
   const exportCard = async () => {
     setBusy(true);
     setMessage("");
@@ -1500,6 +1560,7 @@ function ClearDeviceData() {
                 "threshingday:published:v1",
                 "threshingday:rider-name:v1",
                 "threshingday:atmosphere",
+                SOUND_VOLUME_KEY,
               ]
                 .map(remove)
                 .every(Boolean);
@@ -1617,7 +1678,7 @@ function InfoPage({ path }: { path: string }) {
   if (path === "/privacy/")
     return (
       <main className="editorial-page info-page">
-        <Label>Last updated October 5, 2026</Label>
+        <Label>Last updated October 20, 2026</Label>
         <h1>Your story stays with you.</h1>
         <p className="article-intro">
           Your progress, saved companions and reminder are stored in your
@@ -1643,11 +1704,13 @@ function InfoPage({ path }: { path: string }) {
         <p>
           Your eight choices and current question, your last completed trial,
           completed journey paths, saved companion IDs, your background-motion
-          preference, and the end time of a reminder use localStorage. Your
-          exploration journal records discoveries on this device only. Your
-          answers are sent for score verification only if you choose to publish
-          a bond. The answers themselves are not retained in the database. This
-          storage does not follow you to another browser or device.
+          preference, sound volume, and the end time of a reminder use
+          localStorage. Sound starts only when you enable it and is made in your
+          browser, without an external music player. Your exploration journal
+          records discoveries on this device only. Your answers are sent for
+          score verification only if you choose to publish a bond. The answers
+          themselves are not retained in the database. This storage does not
+          follow you to another browser or device.
         </p>
         <h2>Optional public bonds</h2>
         <p>
@@ -1781,19 +1844,23 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
   const [path, setPath] = useState(normalizePath(initialPath)),
     [routeKey, setRouteKey] = useState(initialPath);
   const pageRef = useRef<HTMLDivElement>(null);
-  const homeVisit = useRef(0);
+  const documentVisit = useRef(0);
+  const routeLocation = useRef(initialPath);
   useEffect(() => {
-    const update = () => {
+    routeLocation.current = window.location.pathname + window.location.search;
+    const update = (event?: Event) => {
       setPath(normalizePath(window.location.pathname));
+      const location = window.location.pathname + window.location.search;
+      const sameDocument = routeLocation.current === location;
       const homeReturn =
         window.location.pathname === "/" &&
         !window.location.search &&
         !window.location.hash;
-      setRouteKey(
-        window.location.pathname +
-          window.location.search +
-          (homeReturn ? `:visit-${++homeVisit.current}` : ""),
-      );
+      // Reading a chapter (including Back through anchors) keeps this visit's trial.
+      // A Play/header home click or a return from another page begins a fresh visit.
+      if (!sameDocument || (event?.type === "site:navigate" && homeReturn))
+        setRouteKey(`${location}:visit-${++documentVisit.current}`);
+      routeLocation.current = location;
       if (window.location.hash)
         requestAnimationFrame(() =>
           document
@@ -1807,12 +1874,18 @@ export default function App({ initialPath = "/" }: { initialPath?: string }) {
         );
       }
     };
+    const syncReplayedLocation = () => {
+      // Go again removes a shared query without remounting the active trial.
+      routeLocation.current = window.location.pathname + window.location.search;
+    };
     if (window.location.hash) update();
     window.addEventListener("site:navigate", update);
     window.addEventListener("popstate", update);
+    window.addEventListener("site:trial-restart", syncReplayedLocation);
     return () => {
       window.removeEventListener("site:navigate", update);
       window.removeEventListener("popstate", update);
+      window.removeEventListener("site:trial-restart", syncReplayedLocation);
     };
   }, []);
   useEffect(() => {
